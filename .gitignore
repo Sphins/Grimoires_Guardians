@@ -1,12 +1,19 @@
+# Ignorer le fichier volumineux
 grimoires-guardians-backend/public/videos/runic_circle.m4v
-# Ignorer node_modules
-node_modules/
-
-# Ignorer les fichiers de cache volumineux
-grimoires-guardians-frontend/node_modules/.cache/
 
 # Ignorer node_modules
 node_modules/
 
 # Ignorer les fichiers de cache volumineux
 grimoires-guardians-frontend/node_modules/.cache/
+
+# Other typical files to ignore
+.DS_Store
+*.log
+*.tmp
+*.bak
+*.swp
+*.swo
+*.pid
+*.seed
+*.pid.lock
