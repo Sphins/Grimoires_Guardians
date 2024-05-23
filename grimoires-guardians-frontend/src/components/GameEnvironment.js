@@ -104,10 +104,10 @@ const GameEnvironment = () => {
                 </Paper>
                 <Box className="tab-content" flex="1" overflow="auto">
                     {tabIndex === 0 && <Chat gameId={gameId} />}
-                    {tabIndex === 1 && <CharacterManagement />}
-                    {tabIndex === 2 && <Items />}
-                    {tabIndex === 3 && <Notes />}
-                    {tabIndex === 4 && <GameManagement />}
+                    {tabIndex === 1 && <CharacterManagement gameId={gameId} />}
+                    {tabIndex === 2 && <Items gameId={gameId} />}
+                    {tabIndex === 3 && <Notes gameId={gameId} />}
+                    {tabIndex === 4 && <GameManagement gameId={gameId} />}
                 </Box>
             </Box>
         </Box>

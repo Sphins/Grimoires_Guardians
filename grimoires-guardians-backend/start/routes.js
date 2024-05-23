@@ -18,5 +18,7 @@ Route.group(() => {
     Route.get('game/:id', 'GameController.getGameDetails').middleware('auth')
     Route.post('game/:id/save-chat-history', 'GameController.saveChatHistory').middleware('auth')
     Route.get('game/:id/get-chat-history', 'GameController.getChatHistory').middleware('auth')
+    Route.post('game/:gameId/structure', 'FileStructureController.saveStructure').middleware('auth')
+    Route.get('game/:gameId/structure', 'FileStructureController.loadStructure').middleware('auth')
 
 }).prefix('api')

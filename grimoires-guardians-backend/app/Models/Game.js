@@ -14,26 +14,18 @@ class Game extends Model {
 
     async setChatHistory(chatHistory) {
         if (chatHistory) {
-            console.log('Entrée dans setChatHistory');
             const chatHistoryString = JSON.stringify(chatHistory);
-            console.log('this.chat_history:', chatHistoryString);
 
-            // Vérification que chatHistoryString n'est pas vide
             if (!chatHistoryString) {
                 throw new Error('Chat history is empty after JSON.stringify');
             }
 
             try {
-                // Utiliser Knex pour mettre à jour la base de données
                 await Database.table('games')
                     .where('id', this.id)
                     .update({ chat_history: chatHistoryString });
-
-                console.log('Chat history saved successfully');
             } catch (error) {
                 console.error('Error saving chat history:', error);
-
-                // Afficher les informations de requête SQL
                 console.error('SQL:', `update games set chat_history = '${chatHistoryString}' where id = ${this.id}`);
             }
         } else {
@@ -43,6 +35,35 @@ class Game extends Model {
 
     getChatHistory() {
         return JSON.parse(this.chat_history || '[]')
+    }
+
+    async setFileStructure(type, structure) {
+        if (structure) {
+            const structureString = JSON.stringify(structure);
+
+            if (!structureString) {
+                throw new Error(`${type} structure is empty after JSON.stringify`);
+            }
+
+            try {
+                const updateData = {};
+                updateData[`${type}_files_structure`] = structureString;
+
+                await Database.table('games')
+                    .where('id', this.id)
+                    .update(updateData);
+            } catch (error) {
+                console.error(`Error saving ${type} structure:`, error);
+                console.error('SQL:', `update games set ${type}_files_structure = '${structureString}' where id = ${this.id}`);
+            }
+        } else {
+            throw new Error(`${type} structure is required`);
+        }
+    }
+
+    getFileStructure(type) {
+        const structureField = this[`${type}_files_structure`];
+        return JSON.parse(structureField || '[]');
     }
 }
 

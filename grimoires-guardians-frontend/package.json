@@ -24,12 +24,42 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "lint": "eslint . --ext .js,.jsx --ignore-path .gitignore --ignore-pattern node_modules"
   },
   "eslintConfig": {
     "extends": [
       "react-app",
-      "react-app/jest"
+      "react-app/jest",
+      "eslint:recommended"
+    ],
+    "rules": {
+      "react/no-deprecated": "warn",
+      "react/no-direct-mutation-state": "warn",
+      "react/no-find-dom-node": "warn",
+      "react/no-is-mounted": "warn",
+      "react/react-in-jsx-scope": "off",
+      "react/require-render-return": "warn",
+      "react/jsx-key": "warn",
+      "react/jsx-no-comment-textnodes": "warn",
+      "react/jsx-no-duplicate-props": ["warn", { "ignoreCase": true }],
+      "react/jsx-no-target-blank": "warn",
+      "react/jsx-no-undef": "warn",
+      "react/jsx-pascal-case": ["warn", { "allowAllCaps": true, "ignore": [] }],
+      "react/jsx-uses-react": "warn",
+      "react/jsx-uses-vars": "warn",
+      "no-undef": "warn",
+      "no-unused-vars": "warn",
+      "react/no-unsafe": "off"
+    },
+    "overrides": [
+      {
+        "files": ["**/node_modules/**/*.js"],
+        "rules": {
+          "react/no-deprecated": "off",
+          "react/no-unsafe": "off"
+        }
+      }
     ]
   },
   "browserslist": {

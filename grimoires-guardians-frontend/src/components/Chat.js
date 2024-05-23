@@ -43,8 +43,8 @@ const Chat = ({ gameId }) => {
     }, [gameId]);
 
     const handleDiceRoll = (command) => {
-        const { result, rolls, total } = rollDice(command);
-        return { result, rolls, total };
+        const { rolls, total } = rollDice(command);
+        return { rolls, total };
     };
 
     const handleSendMessage = async () => {
@@ -52,7 +52,7 @@ const Chat = ({ gameId }) => {
             let message = { user: userName, text: messageInput };
             if (messageInput.startsWith('/r ')) {
                 const command = messageInput.substring(3);
-                const { result, rolls, total } = handleDiceRoll(command);
+                const { rolls, total } = handleDiceRoll(command);
                 message = {
                     user: userName,
                     text: `${total}`,
@@ -69,7 +69,6 @@ const Chat = ({ gameId }) => {
             // Sauvegarder l'historique du chat
             try {
                 const token = localStorage.getItem('token');
-                // console.log('Saving chat history:', newMessages);
                 await api.post(`/api/game/${gameId}/save-chat-history`, {
                     history: newMessages
                 }, {
