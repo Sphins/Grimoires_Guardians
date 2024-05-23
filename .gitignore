@@ -1,1 +1,6 @@
 grimoires-guardians-backend/public/videos/runic_circle.m4v
+# Ignorer node_modules
+node_modules/
+
+# Ignorer les fichiers de cache volumineux
+grimoires-guardians-frontend/node_modules/.cache/
