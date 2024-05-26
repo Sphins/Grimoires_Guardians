@@ -3,8 +3,8 @@ import { Box, Tabs, Tab, Paper, Tooltip } from '@mui/material';
 import { useParams } from 'react-router-dom'; // Importer useParams pour obtenir les paramètres de l'URL
 import Chat from './Chat';
 import CharacterManagement from './CharacterManagement';
-import Items from './Items';
-import Notes from './Journal';
+import Items from './ItemManagement ';
+import Notes from './NotesManagement';
 import GameManagement from './GameManagement';
 import ChatIcon from '@mui/icons-material/Chat';
 import PersonIcon from '@mui/icons-material/Person';

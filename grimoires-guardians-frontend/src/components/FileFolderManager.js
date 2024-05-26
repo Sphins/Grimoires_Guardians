@@ -209,6 +209,7 @@ const FileFolderManager = ({ fileTypes, gameId, structureType }) => {
             return;
         }
         try {
+            console.log('Saving structure with type:', structureType); // Ajout de logs
             await api.post(`/api/game/${gameId}/structure`, {
                 type: structureType,
                 structure
@@ -224,6 +225,7 @@ const FileFolderManager = ({ fileTypes, gameId, structureType }) => {
             return;
         }
         try {
+            console.log('Loading structure with type:', structureType); // Ajout de logs
             const response = await api.get(`/api/game/${gameId}/structure`, {
                 params: { type: structureType }
             });

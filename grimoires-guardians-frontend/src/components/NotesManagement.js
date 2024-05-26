@@ -8,7 +8,7 @@ const NoteManagement = ({ gameId }) => {
     return (
         <Box>
             <Typography variant="h5" gutterBottom>Gestion des Notes</Typography>
-            <FileFolderManager fileTypes={fileTypes} gameId={gameId} structureType="note_files_structure" />
+            <FileFolderManager fileTypes={fileTypes} gameId={gameId} structureType="note" />
         </Box>
     );
 };

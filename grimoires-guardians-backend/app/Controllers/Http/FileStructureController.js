@@ -4,7 +4,6 @@ const Game = use('App/Models/Game')
 
 class FileStructureController {
     async saveStructure({ request, params, response }) {
-        console.log('saveStructure')
         const { gameId } = params
         const { type, structure } = request.only(['type', 'structure'])
 
