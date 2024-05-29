@@ -3,7 +3,7 @@ import { Box, Typography } from '@mui/material';
 import FileFolderManager from './FileFolderManager'; // Assurez-vous que le chemin est correct
 
 const ItemManagement = ({ gameId }) => {
-    const fileTypes = ['Arme', 'Armure', 'Accessoire', 'Potion', 'Autre'];
+    const fileTypes = ['Arme', 'Armure', 'Accessoire', 'Autre'];
 
     return (
         <Box>

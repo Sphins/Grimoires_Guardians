@@ -1,0 +1,105 @@
+{
+  "name": "Demi-plaque",
+  "type": "item",
+  "flags": {
+    "core": {},
+    "exportSource": {
+      "world": "tfe",
+      "system": "cof",
+      "coreVersion": "11.315",
+      "systemVersion": "11.315.0"
+    }
+  },
+  "img": "modules/cof-srd/ui/icons/items/demi-plaque.webp",
+  "effects": [],
+  "system": {
+    "key": "",
+    "description": "<h1>Description</h1><p>Très rare.</p>",
+    "source": "Chroniques Oubliées DRS",
+    "moduleData": {},
+    "def": 6,
+    "defBase": 6,
+    "defBonus": 0,
+    "dr": 0,
+    "dmg": "",
+    "dmgBase": "",
+    "dmgStat": "",
+    "dmgBonus": 0,
+    "mod": 0,
+    "skill": "",
+    "skillBonus": 0,
+    "critrange": "20",
+    "hands": 1,
+    "range": 0,
+    "reload": "",
+    "worn": false,
+    "slot": "chest",
+    "qty": 1,
+    "stacksize": null,
+    "deleteWhen0": false,
+    "price": 50,
+    "value": 0,
+    "rarity": "very-rare",
+    "properties": {
+      "predilection": false,
+      "ranged": false,
+      "equipable": true,
+      "stackable": false,
+      "activable": false,
+      "unique": false,
+      "tailored": false,
+      "2H": false,
+      "proficient": false,
+      "finesse": false,
+      "equipment": true,
+      "weapon": false,
+      "protection": true,
+      "reloadable": false,
+      "bow": false,
+      "crossbow": false,
+      "powder": false,
+      "throwing": false,
+      "dr": false,
+      "sneak": false,
+      "powerful": false,
+      "critscience": false,
+      "specialization": false,
+      "effects": false,
+      "13strmin": false,
+      "bashing": false,
+      "sling": false,
+      "spell": false,
+      "consumable": false,
+      "very-rare": false,
+      "2h": false
+    },
+    "effects": {
+      "heal": {
+        "formula": null,
+        "persistent": false,
+        "duration": {
+          "value": null,
+          "units": null
+        }
+      },
+      "buff": {
+        "formula": null,
+        "persistent": false,
+        "duration": {
+          "value": null,
+          "units": null
+        }
+      }
+    },
+    "subtype": "armor"
+  },
+  "folder": "DZSKdYeneUlydKwo",
+  "_stats": {
+    "systemId": "cof",
+    "systemVersion": "11.315.0",
+    "coreVersion": "11.315",
+    "createdTime": 1716834648455,
+    "modifiedTime": 1716834648455,
+    "lastModifiedBy": "7MggQFVPwVtKlhYx"
+  }
+}

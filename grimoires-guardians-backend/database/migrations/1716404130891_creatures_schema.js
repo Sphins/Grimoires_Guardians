@@ -6,10 +6,8 @@ class CreaturesSchema extends Schema {
   up() {
     this.create('creatures', (table) => {
       table.increments()
-      table.string('name', 80).notNullable()
-      table.string('type', 80)
-      table.integer('hit_points')
-      table.text('abilities')
+      table.string('img', 40)
+      table.text('data')
       table.timestamps()
     })
   }

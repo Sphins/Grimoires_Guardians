@@ -6,9 +6,9 @@ class ItemsSchema extends Schema {
   up() {
     this.create('items', (table) => {
       table.increments()
-      table.string('name', 80).notNullable()
-      table.text('description')
-      table.integer('type_id').unsigned().references('id').inTable('item_types')
+      table.string('img', 40)
+      table.text('data')
+      table.integer('game_id').unsigned().references('id').inTable('games').onDelete('CASCADE');
       table.integer('hero_id').unsigned().references('id').inTable('heroes')
       table.timestamps()
     })

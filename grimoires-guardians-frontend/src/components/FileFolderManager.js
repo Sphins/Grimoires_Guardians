@@ -8,17 +8,19 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import api from '../services/api'; // Importez le service API
+import api from '../services/api';
+import FileEditPopup from './FileEditPopup';
 
 const ItemTypes = {
     FOLDER: 'folder',
     FILE: 'file'
 };
 
-const DraggableItem = ({ item, index, moveItem, findItem, parentId, level, toggleFolder, openFolders, deleteItem }) => {
+const DraggableItem = ({ item, index, moveItem, findItem, parentId, level, toggleFolder, openFolders, deleteItem, handleFileClick }) => {
     const originalIndex = findItem(item.id).index;
+
     const [{ isDragging }, drag] = useDrag({
-        type: item.type,
+        type: item.type, // Assurez-vous que item.type est correctement défini
         item: { id: item.id, originalIndex, parentId, type: item.type },
         collect: (monitor) => ({
             isDragging: monitor.isDragging(),
@@ -46,7 +48,7 @@ const DraggableItem = ({ item, index, moveItem, findItem, parentId, level, toggl
     return (
         <div ref={(node) => drag(drop(node))} style={{ opacity: isDragging ? 0.5 : 1 }}>
             <div style={{ backgroundColor: '#f0f0f0', margin: '2px 0', paddingLeft: level * 20 }}>
-                <ListItem button onClick={handleClick}>
+                <ListItem button onClick={item.type === 'file' ? () => handleFileClick(item) : handleClick}>
                     {item.type === 'folder' ? (isFolderOpen ? <FolderOpenIcon /> : <FolderIcon />) : <InsertDriveFileIcon />}
                     <ListItemText primary={item.name} />
                     <IconButton edge="end" onClick={(e) => { e.stopPropagation(); deleteItem(item.id); }} disabled={item.type === 'folder' && item.children && item.children.length > 0}>
@@ -67,6 +69,7 @@ const DraggableItem = ({ item, index, moveItem, findItem, parentId, level, toggl
                                 toggleFolder={toggleFolder}
                                 openFolders={openFolders}
                                 deleteItem={deleteItem}
+                                handleFileClick={handleFileClick}
                             />
                         ))}
                     </List>
@@ -76,10 +79,12 @@ const DraggableItem = ({ item, index, moveItem, findItem, parentId, level, toggl
     );
 };
 
+
 const FileFolderManager = ({ fileTypes, gameId, structureType }) => {
     const [structure, setStructure] = useState([]);
     const [openFolders, setOpenFolders] = useState([]);
     const [openDialog, setOpenDialog] = useState(false);
+    const [editFile, setEditFile] = useState(null);
     const [newItem, setNewItem] = useState({ type: '', name: '', parentId: null, fileType: '' });
 
     const findItem = useCallback((id, items = structure) => {
@@ -97,7 +102,6 @@ const FileFolderManager = ({ fileTypes, gameId, structureType }) => {
         });
         return result;
     }, [structure]);
-
     const moveItem = useCallback((id, toIndex, newParentId) => {
         const findItemAndRemove = (id, items) => {
             for (let i = 0; i < items.length; i++) {
@@ -173,29 +177,39 @@ const FileFolderManager = ({ fileTypes, gameId, structureType }) => {
         setNewItem({ ...newItem, [name]: value });
     };
 
-    const handleCreateItem = () => {
+    const handleCreateItem = async () => {
         if (newItem.name.trim() === '' || (newItem.type === 'file' && newItem.fileType.trim() === '')) return;
 
-        const updatedStructure = JSON.parse(JSON.stringify(structure)); // Deep copy to prevent state mutation
-        const newItemObject = {
-            id: Date.now(),
-            type: newItem.type,
-            name: newItem.name,
-            fileType: newItem.type === 'file' ? newItem.fileType : undefined,
-            children: newItem.type === 'folder' ? [] : undefined,
-        };
+        try {
+            const response = await api.post(`/api/game/${gameId}/create-file`, {
+                name: newItem.name,
+                fileType: newItem.fileType,
+                data: {},
+                type: newItem.type // Ajoutez le type ici
+            });
 
-        if (newItem.parentId === null) {
-            updatedStructure.push(newItemObject);
-        } else {
-            const parent = findItem(newItem.parentId, updatedStructure).item;
-            parent.children.push(newItemObject);
+            const newItemObject = response.data.item;
+            newItemObject.type = newItem.type; // Assurez-vous que le type est défini
+
+            const updatedStructure = JSON.parse(JSON.stringify(structure)); // Deep copy to prevent state mutation
+
+            if (newItem.parentId === null) {
+                updatedStructure.push(newItemObject);
+            } else {
+                const parent = findItem(newItem.parentId, updatedStructure).item;
+                if (!parent.children) parent.children = [];
+                parent.children.push(newItemObject);
+            }
+
+            setStructure(updatedStructure);
+            handleCloseDialog();
+            saveStructure(updatedStructure); // Save structure after creating item
+        } catch (error) {
+            console.error('Error creating item:', error);
         }
-
-        setStructure(updatedStructure);
-        handleCloseDialog();
-        saveStructure(updatedStructure); // Save structure after creating item
     };
+
+
 
     const handleKeyPress = (e) => {
         if (e.key === 'Enter' && newItem.name.trim() !== '' && (newItem.type === 'folder' || newItem.fileType.trim() !== '')) {
@@ -209,7 +223,6 @@ const FileFolderManager = ({ fileTypes, gameId, structureType }) => {
             return;
         }
         try {
-            console.log('Saving structure with type:', structureType); // Ajout de logs
             await api.post(`/api/game/${gameId}/structure`, {
                 type: structureType,
                 structure
@@ -225,15 +238,68 @@ const FileFolderManager = ({ fileTypes, gameId, structureType }) => {
             return;
         }
         try {
-            console.log('Loading structure with type:', structureType); // Ajout de logs
             const response = await api.get(`/api/game/${gameId}/structure`, {
                 params: { type: structureType }
             });
-            setStructure(response.data.structure || []);
+            const structureData = response.data.structure || [];
+
+            // Assurez-vous que chaque élément a un type correctement défini
+            const ensureType = (items) => {
+                return items.map(item => {
+                    if (!item.type) {
+                        item.type = item.children ? ItemTypes.FOLDER : ItemTypes.FILE;
+                    }
+                    if (item.children) {
+                        item.children = ensureType(item.children);
+                    }
+                    return item;
+                });
+            };
+
+            const updatedStructure = ensureType(structureData);
+            setStructure(updatedStructure);
         } catch (error) {
             console.error('Error loading structure:', error);
         }
     };
+
+
+
+    const handleFileClick = async (file) => {
+        try {
+            const response = await api.get(`/api/file/${file.id}`);
+            const fileData = response.data.item;
+            fileData.type = file.type; // Assurez-vous que le type est défini ici
+            setEditFile(fileData);
+        } catch (error) {
+            console.error('Error loading file:', error);
+        }
+    };
+
+
+    const handleSaveFile = async (updatedFile) => {
+        try {
+            const response = await api.put(`/api/file/${updatedFile.id}`, {
+                name: updatedFile.name,
+                data: updatedFile.data,
+                type: updatedFile.type // Ajoutez le type ici
+            });
+
+            const updatedItem = response.data.item;
+            updatedItem.type = updatedFile.type; // Assurez-vous que le type est défini
+
+            const updatedStructure = JSON.parse(JSON.stringify(structure)); // Deep copy to prevent state mutation
+            const { index, parent } = findItem(updatedItem.id, updatedStructure);
+            parent[index] = updatedItem;
+
+            setStructure(updatedStructure);
+            saveStructure(updatedStructure); // Save structure after editing item
+            setEditFile(null); // Fermer le popup après la sauvegarde
+        } catch (error) {
+            console.error('Error updating item:', error);
+        }
+    };
+
 
     useEffect(() => {
         loadStructure();
@@ -269,6 +335,7 @@ const FileFolderManager = ({ fileTypes, gameId, structureType }) => {
                             toggleFolder={toggleFolder}
                             openFolders={openFolders}
                             deleteItem={deleteItem}
+                            handleFileClick={handleFileClick}
                         />
                     ))}
                 </List>
@@ -309,9 +376,18 @@ const FileFolderManager = ({ fileTypes, gameId, structureType }) => {
                         </Button>
                     </DialogActions>
                 </Dialog>
+                {editFile && (
+                    <FileEditPopup
+                        open={Boolean(editFile)}
+                        onClose={() => setEditFile(null)}
+                        file={editFile}
+                        onSave={handleSaveFile}
+                    />
+                )}
             </Box>
         </DndProvider>
     );
 };
 
 export default FileFolderManager;
+

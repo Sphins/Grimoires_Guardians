@@ -6,8 +6,8 @@ class RacesSchema extends Schema {
   up() {
     this.create('races', (table) => {
       table.increments()
-      table.string('name', 80).notNullable()
-      table.text('description')
+      table.string('img', 40)
+      table.text('data')
       table.timestamps()
     })
   }

@@ -1,15 +1,15 @@
-'use strict'
+'use strict';
 
-const Model = use('Model')
-const Database = use('Database')
+const Model = use('Model');
+const Database = use('Database');
 
 class Game extends Model {
     mj() {
-        return this.belongsTo('App/Models/User', 'mj_id', 'id')
+        return this.belongsTo('App/Models/User', 'mj_id', 'id');
     }
 
     players() {
-        return this.belongsToMany('App/Models/User').pivotTable('game_user')
+        return this.belongsToMany('App/Models/User').pivotTable('game_user');
     }
 
     async setChatHistory(chatHistory) {
@@ -26,7 +26,6 @@ class Game extends Model {
                     .update({ chat_history: chatHistoryString });
             } catch (error) {
                 console.error('Error saving chat history:', error);
-                console.error('SQL:', `update games set chat_history = '${chatHistoryString}' where id = ${this.id}`);
             }
         } else {
             throw new Error('Chat history is required');
@@ -34,7 +33,7 @@ class Game extends Model {
     }
 
     getChatHistory() {
-        return JSON.parse(this.chat_history || '[]')
+        return JSON.parse(this.chat_history || '[]');
     }
 
     async setFileStructure(type, structure) {
@@ -54,7 +53,6 @@ class Game extends Model {
                     .update(updateData);
             } catch (error) {
                 console.error(`Error saving ${type} structure:`, error);
-                console.error('SQL:', `update games set ${type}_files_structure = '${structureString}' where id = ${this.id}`);
             }
         } else {
             throw new Error(`${type} structure is required`);
@@ -67,4 +65,4 @@ class Game extends Model {
     }
 }
 
-module.exports = Game
+module.exports = Game;
