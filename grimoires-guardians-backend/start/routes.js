@@ -26,5 +26,6 @@ Route.group(() => {
 
     Route.put('file/:fileId', 'FileStructureController.updateFile').middleware('auth');
     Route.get('file/:fileId', 'FileStructureController.loadFile').middleware('auth');
-    Route.delete('file/:fileId', 'FileStructureController.deleteFile').middleware('auth');
+    Route.delete('/file/:gameId/:fileId', 'FileStructureController.deleteFile').middleware('auth');
+
 }).prefix('api');

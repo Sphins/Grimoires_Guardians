@@ -137,7 +137,7 @@ const FileFolderManager = ({ fileTypes, gameId, structureType }) => {
     const deleteItem = useCallback(async (item) => {
         if (item.type === 'file') {
             try {
-                await api.delete(`/api/file/${item.id}`);
+                await api.delete(`/api/file/${gameId}/${item.id}`);
             } catch (error) {
                 console.error('Error deleting item:', error);
                 return;
@@ -264,27 +264,6 @@ const FileFolderManager = ({ fileTypes, gameId, structureType }) => {
             };
 
             const updatedStructure = ensureType(structureData);
-
-            if (structureType === 'item') {
-                const itemsResponse = await api.get(`/api/game/${gameId}/items`);
-                const dbFolder = {
-                    id: 'db-folder',
-                    name: 'DB',
-                    type: 'folder',
-                    children: itemsResponse.data.items.map(item => ({
-                        id: item.id,
-                        name: JSON.parse(item.data).name,
-                        type: 'file',
-                        fileType: JSON.parse(item.data).fileType,
-                        data: JSON.parse(item.data)
-                    }))
-                };
-
-                const dbFolderExists = updatedStructure.some(item => item.id === 'db-folder');
-                if (!dbFolderExists) {
-                    updatedStructure.push(dbFolder);
-                }
-            }
 
             setStructure(updatedStructure);
         } catch (error) {

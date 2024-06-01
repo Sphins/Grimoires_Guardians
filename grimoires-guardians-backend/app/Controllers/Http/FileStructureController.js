@@ -27,7 +27,7 @@ class FileStructureController {
 
     async loadStructure({ params, request, response }) {
         const { gameId } = params;
-        const { type } = request.only(['type']); // Assurez-vous de récupérer le type correctement
+        const { type } = request.only(['type']);
 
         try {
             const game = await Database.table('games').where('id', gameId).first();
@@ -133,20 +133,50 @@ class FileStructureController {
         }
     }
 
-    async deleteFile({ params, response }) {
-        const { fileId } = params;
+    async deleteFile({ params, request, response }) {
+        const { gameId, fileId } = params;
+        let item;
 
+        // Tentative de suppression dans la base de données
         try {
-            const item = await Item.find(fileId);
-            if (!item) {
-                return response.status(404).json({ error: 'Item not found' });
+            item = await Item.find(fileId);
+            if (item) {
+                await item.delete();
+            }
+        } catch (error) {
+            console.error('Error deleting item from database:', error);
+        }
+
+        // Suppression de la structure même si la suppression dans la base de données échoue
+        try {
+            const game = await Database.table('games').where('id', gameId).first();
+            if (!game) {
+                return response.status(404).json({ error: 'Game not found' });
             }
 
-            await item.delete();
+            const field = `item_files_structure`;
+            let structure = JSON.parse(game[field] || '[]');
+
+            const findAndRemoveItem = (items, id) => {
+                return items.filter(item => {
+                    if (item.id === id) {
+                        return false;
+                    }
+                    if (item.children) {
+                        item.children = findAndRemoveItem(item.children, id);
+                    }
+                    return true;
+                });
+            };
+
+            structure = findAndRemoveItem(structure, fileId);
+
+            await Database.table('games').where('id', gameId).update({ [field]: JSON.stringify(structure) });
+
             return response.status(200).json({ message: 'Item deleted successfully' });
         } catch (error) {
-            console.error('Error deleting item:', error);
-            return response.status(500).json({ error: 'Failed to delete item' });
+            console.error('Error deleting item from structure:', error);
+            return response.status(500).json({ error: 'Failed to delete item from structure' });
         }
     }
 
