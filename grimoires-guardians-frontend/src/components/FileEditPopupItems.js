@@ -9,6 +9,7 @@ import RaceForm from './Items/RaceForm';
 import ProfileForm from './Items/ProfileForm';
 import PathForm from './Items/PathForm';
 import CapacityForm from './Items/CapacityForm';
+import NoteForm from './notes/NoteForm';
 
 const FileEditPopupItems = ({ open, file, onSave, onClose, gameId }) => {
     const [localFile, setLocalFile] = useState(file);
@@ -44,6 +45,9 @@ const FileEditPopupItems = ({ open, file, onSave, onClose, gameId }) => {
                 return <PathForm file={localFile} onSave={handleSave} gameId={gameId} />;
             case 'Capacité':
                 return <CapacityForm file={localFile} onSave={handleSave} />;
+            case 'Privé': // Cas pour les notes privées
+            case 'Public': // Cas pour les notes publiques
+                return <NoteForm file={localFile} onSave={handleSave} />;
             default:
                 return null;
         }

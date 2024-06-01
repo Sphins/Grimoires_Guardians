@@ -303,8 +303,15 @@ const FileFolderManager = ({ fileTypes, gameId, structureType }) => {
 
     const handleFileClick = async (file) => {
         try {
-            const response = await api.get(`/api/file/${file.id}`);
-            const fileData = response.data.item;
+            let response;
+            if (structureType === 'note') {
+                response = await api.get(`/api/game/${gameId}/notes/${file.id}`);
+            } else if (structureType === 'character') {
+                response = await api.get(`/api/character/${gameId}/${file.id}`);
+            } else {
+                response = await api.get(`/api/file/${file.id}`);
+            }
+            const fileData = response.data.item || response.data.note || response.data.character;
             fileData.type = file.type; // Assurez-vous que le type est défini ici
             setEditFile(fileData);
         } catch (error) {
@@ -312,15 +319,25 @@ const FileFolderManager = ({ fileTypes, gameId, structureType }) => {
         }
     };
 
+
     const handleSaveFile = async (updatedFile) => {
         try {
-            const response = await api.put(`/api/file/${updatedFile.id}`, {
+            let endpoint;
+            if (structureType === 'note') {
+                endpoint = `/api/game/${gameId}/notes/${updatedFile.id}`;
+            } else if (structureType === 'character') {
+                endpoint = `/api/character/${gameId}/${updatedFile.id}`;
+            } else {
+                endpoint = `/api/file/${updatedFile.id}`;
+            }
+
+            const response = await api.put(endpoint, {
                 name: updatedFile.name,
                 data: updatedFile.data,
                 type: updatedFile.type // Ajoutez le type ici
             });
 
-            const updatedItem = response.data.item;
+            const updatedItem = response.data.item || response.data.note || response.data.character;
             updatedItem.type = updatedFile.type; // Assurez-vous que le type est défini
 
             const updatedStructure = JSON.parse(JSON.stringify(structure)); // Deep copy to prevent state mutation
@@ -334,6 +351,7 @@ const FileFolderManager = ({ fileTypes, gameId, structureType }) => {
             console.error('Error updating item:', error);
         }
     };
+
 
     const handleConfirmDelete = (item) => {
         setConfirmDeleteDialog({ open: true, item });
