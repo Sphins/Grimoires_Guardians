@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { Box, List, ListItem, ListItemText, IconButton, Tooltip, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Paper, MenuItem, Select, FormControl, InputLabel } from '@mui/material';
+import { Box, List, ListItem, ListItemText, IconButton, Tooltip, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Paper, MenuItem, Select, FormControl, InputLabel, Typography } from '@mui/material';
 import FolderIcon from '@mui/icons-material/Folder';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
@@ -18,9 +18,8 @@ const ItemTypes = {
 
 const DraggableItem = ({ item, index, moveItem, findItem, parentId, level, toggleFolder, openFolders, deleteItem, handleFileClick }) => {
     const originalIndex = findItem(item.id).index;
-
     const [{ isDragging }, drag] = useDrag({
-        type: item.type, // Assurez-vous que item.type est correctement défini
+        type: item.type,
         item: { id: item.id, originalIndex, parentId, type: item.type },
         collect: (monitor) => ({
             isDragging: monitor.isDragging(),
@@ -51,7 +50,7 @@ const DraggableItem = ({ item, index, moveItem, findItem, parentId, level, toggl
                 <ListItem button onClick={item.type === 'file' ? () => handleFileClick(item) : handleClick}>
                     {item.type === 'folder' ? (isFolderOpen ? <FolderOpenIcon /> : <FolderIcon />) : <InsertDriveFileIcon />}
                     <ListItemText primary={item.name} />
-                    <IconButton edge="end" onClick={(e) => { e.stopPropagation(); deleteItem(item.id); }} disabled={item.type === 'folder' && item.children && item.children.length > 0}>
+                    <IconButton edge="end" onClick={(e) => { e.stopPropagation(); deleteItem(item); }} disabled={item.type === 'folder' && item.children && item.children.length > 0}>
                         <DeleteIcon />
                     </IconButton>
                 </ListItem>
@@ -79,13 +78,13 @@ const DraggableItem = ({ item, index, moveItem, findItem, parentId, level, toggl
     );
 };
 
-
 const FileFolderManager = ({ fileTypes, gameId, structureType }) => {
     const [structure, setStructure] = useState([]);
     const [openFolders, setOpenFolders] = useState([]);
     const [openDialog, setOpenDialog] = useState(false);
     const [editFile, setEditFile] = useState(null);
     const [newItem, setNewItem] = useState({ type: '', name: '', parentId: null, fileType: '' });
+    const [confirmDeleteDialog, setConfirmDeleteDialog] = useState({ open: false, item: null });
 
     const findItem = useCallback((id, items = structure) => {
         let result;
@@ -102,6 +101,7 @@ const FileFolderManager = ({ fileTypes, gameId, structureType }) => {
         });
         return result;
     }, [structure]);
+
     const moveItem = useCallback((id, toIndex, newParentId) => {
         const findItemAndRemove = (id, items) => {
             for (let i = 0; i < items.length; i++) {
@@ -134,7 +134,16 @@ const FileFolderManager = ({ fileTypes, gameId, structureType }) => {
         saveStructure(updatedStructure); // Save structure after moving item
     }, [structure, findItem]);
 
-    const deleteItem = useCallback((id) => {
+    const deleteItem = useCallback(async (item) => {
+        if (item.type === 'file') {
+            try {
+                await api.delete(`/api/file/${item.id}`);
+            } catch (error) {
+                console.error('Error deleting item:', error);
+                return;
+            }
+        }
+
         const updatedStructure = JSON.parse(JSON.stringify(structure)); // Deep copy to prevent state mutation
 
         const findItemAndRemove = (id, items) => {
@@ -152,7 +161,7 @@ const FileFolderManager = ({ fileTypes, gameId, structureType }) => {
             return false;
         };
 
-        findItemAndRemove(id, updatedStructure);
+        findItemAndRemove(item.id, updatedStructure);
         setStructure(updatedStructure);
         saveStructure(updatedStructure); // Save structure after deleting item
     }, [structure]);
@@ -184,8 +193,8 @@ const FileFolderManager = ({ fileTypes, gameId, structureType }) => {
             const response = await api.post(`/api/game/${gameId}/create-file`, {
                 name: newItem.name,
                 fileType: newItem.fileType,
-                data: {},
-                type: newItem.type // Ajoutez le type ici
+                type: newItem.type, // Assurez-vous que le type est défini ici
+                parentId: newItem.parentId
             });
 
             const newItemObject = response.data.item;
@@ -208,8 +217,6 @@ const FileFolderManager = ({ fileTypes, gameId, structureType }) => {
             console.error('Error creating item:', error);
         }
     };
-
-
 
     const handleKeyPress = (e) => {
         if (e.key === 'Enter' && newItem.name.trim() !== '' && (newItem.type === 'folder' || newItem.fileType.trim() !== '')) {
@@ -257,13 +264,33 @@ const FileFolderManager = ({ fileTypes, gameId, structureType }) => {
             };
 
             const updatedStructure = ensureType(structureData);
+
+            if (structureType === 'item') {
+                const itemsResponse = await api.get(`/api/game/${gameId}/items`);
+                const dbFolder = {
+                    id: 'db-folder',
+                    name: 'DB',
+                    type: 'folder',
+                    children: itemsResponse.data.items.map(item => ({
+                        id: item.id,
+                        name: JSON.parse(item.data).name,
+                        type: 'file',
+                        fileType: JSON.parse(item.data).fileType,
+                        data: JSON.parse(item.data)
+                    }))
+                };
+
+                const dbFolderExists = updatedStructure.some(item => item.id === 'db-folder');
+                if (!dbFolderExists) {
+                    updatedStructure.push(dbFolder);
+                }
+            }
+
             setStructure(updatedStructure);
         } catch (error) {
             console.error('Error loading structure:', error);
         }
     };
-
-
 
     const handleFileClick = async (file) => {
         try {
@@ -275,7 +302,6 @@ const FileFolderManager = ({ fileTypes, gameId, structureType }) => {
             console.error('Error loading file:', error);
         }
     };
-
 
     const handleSaveFile = async (updatedFile) => {
         try {
@@ -300,6 +326,19 @@ const FileFolderManager = ({ fileTypes, gameId, structureType }) => {
         }
     };
 
+    const handleConfirmDelete = (item) => {
+        setConfirmDeleteDialog({ open: true, item });
+    };
+
+    const handleCancelDelete = () => {
+        setConfirmDeleteDialog({ open: false, item: null });
+    };
+
+    const handleDeleteItem = async () => {
+        const item = confirmDeleteDialog.item;
+        setConfirmDeleteDialog({ open: false, item: null });
+        deleteItem(item);
+    };
 
     useEffect(() => {
         loadStructure();
@@ -334,7 +373,7 @@ const FileFolderManager = ({ fileTypes, gameId, structureType }) => {
                             level={0}
                             toggleFolder={toggleFolder}
                             openFolders={openFolders}
-                            deleteItem={deleteItem}
+                            deleteItem={handleConfirmDelete}
                             handleFileClick={handleFileClick}
                         />
                     ))}
@@ -376,12 +415,27 @@ const FileFolderManager = ({ fileTypes, gameId, structureType }) => {
                         </Button>
                     </DialogActions>
                 </Dialog>
+                <Dialog open={confirmDeleteDialog.open} onClose={handleCancelDelete}>
+                    <DialogTitle>Confirmer la suppression</DialogTitle>
+                    <DialogContent>
+                        <Typography>Êtes-vous sûr de vouloir supprimer cet élément ?</Typography>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={handleCancelDelete} color="primary">
+                            Annuler
+                        </Button>
+                        <Button onClick={handleDeleteItem} color="secondary">
+                            Supprimer
+                        </Button>
+                    </DialogActions>
+                </Dialog>
                 {editFile && (
                     <FileEditPopup
                         open={Boolean(editFile)}
                         onClose={() => setEditFile(null)}
                         file={editFile}
                         onSave={handleSaveFile}
+                        gameId={gameId}
                     />
                 )}
             </Box>
@@ -390,4 +444,3 @@ const FileFolderManager = ({ fileTypes, gameId, structureType }) => {
 };
 
 export default FileFolderManager;
-

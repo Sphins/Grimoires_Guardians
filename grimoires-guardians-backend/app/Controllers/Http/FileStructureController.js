@@ -47,12 +47,19 @@ class FileStructureController {
 
     async createFile({ request, response, params }) {
         const { gameId } = params;
-        const { name, fileType, data } = request.only(['name', 'fileType', 'data']);
+        const { name, fileType, type, parentId } = request.only(['name', 'fileType', 'type', 'parentId']);
+
+        if (type === 'folder') {
+            return response.status(201).json({
+                message: 'Folder created successfully',
+                item: { id: `${Date.now()}`, name, type, children: [] } // Crée un dossier avec un ID unique
+            });
+        }
 
         try {
             const item = new Item();
             item.game_id = gameId; // Assurez-vous que game_id est assigné ici
-            item.data = JSON.stringify({ name, fileType, ...data });
+            item.data = JSON.stringify({ name, fileType });
             await item.save();
 
             const newItemObject = {
@@ -123,6 +130,35 @@ class FileStructureController {
         } catch (error) {
             console.error('Error updating item:', error);
             return response.status(500).json({ error: 'Failed to update item' });
+        }
+    }
+
+    async deleteFile({ params, response }) {
+        const { fileId } = params;
+
+        try {
+            const item = await Item.find(fileId);
+            if (!item) {
+                return response.status(404).json({ error: 'Item not found' });
+            }
+
+            await item.delete();
+            return response.status(200).json({ message: 'Item deleted successfully' });
+        } catch (error) {
+            console.error('Error deleting item:', error);
+            return response.status(500).json({ error: 'Failed to delete item' });
+        }
+    }
+
+    async loadItems({ params, response }) {
+        const { gameId } = params;
+
+        try {
+            const items = await Item.query().where('game_id', gameId).fetch();
+            return response.status(200).json({ items: items.toJSON() });
+        } catch (error) {
+            console.error('Error loading items:', error);
+            return response.status(500).json({ error: 'Failed to load items' });
         }
     }
 }

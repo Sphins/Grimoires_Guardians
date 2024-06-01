@@ -1,9 +1,9 @@
 import React from 'react';
 import { Box, Typography } from '@mui/material';
-import FileFolderManager from './FileFolderManager'; // Assurez-vous que le chemin est correct
+import FileFolderManager from './FileFolderManager';
 
 const ItemManagement = ({ gameId }) => {
-    const fileTypes = ['Arme', 'Armure', 'Accessoire', 'Autre'];
+    const fileTypes = ['Arme', 'Armure', 'Accessoire', 'Autre', 'Peuple', 'Profil', 'Voie', 'Capacité'];
 
     return (
         <Box>

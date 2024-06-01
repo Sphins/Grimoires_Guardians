@@ -21,6 +21,10 @@ Route.group(() => {
     Route.post('game/:gameId/structure', 'FileStructureController.saveStructure').middleware('auth');
     Route.get('game/:gameId/structure', 'FileStructureController.loadStructure').middleware('auth');
     Route.post('game/:gameId/create-file', 'FileStructureController.createFile').middleware('auth');
-    Route.get('file/:fileId', 'FileStructureController.loadFile').middleware('auth');
+    Route.get('game/:gameId/items', 'FileStructureController.loadItems').middleware('auth');
+    Route.get('game/:gameId/items/capacities', 'ItemController.getCapacities').middleware('auth');
+
     Route.put('file/:fileId', 'FileStructureController.updateFile').middleware('auth');
+    Route.get('file/:fileId', 'FileStructureController.loadFile').middleware('auth');
+    Route.delete('file/:fileId', 'FileStructureController.deleteFile').middleware('auth');
 }).prefix('api');

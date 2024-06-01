@@ -5,8 +5,12 @@ import WeaponForm from './popups/WeaponForm';
 import ArmorForm from './popups/ArmorForm';
 import AccesoireForm from './popups/AccesoireForm';
 import OtherItemForm from './popups/OtherItemForm';
+import RaceForm from './popups/RaceForm';
+import ProfileForm from './popups/ProfileForm';
+import PathForm from './popups/PathForm';
+import CapacityForm from './popups/CapacityForm';
 
-const FileEditPopup = ({ open, file, onSave, onClose }) => {
+const FileEditPopup = ({ open, file, onSave, onClose, gameId }) => {
     const [localFile, setLocalFile] = useState(file);
 
     useEffect(() => {
@@ -32,6 +36,14 @@ const FileEditPopup = ({ open, file, onSave, onClose }) => {
                 return <AccesoireForm file={localFile} onSave={handleSave} />;
             case 'Autre':
                 return <OtherItemForm file={localFile} onSave={handleSave} />;
+            case 'Peuple':
+                return <RaceForm file={localFile} onSave={handleSave} />;
+            case 'Profil':
+                return <ProfileForm file={localFile} onSave={handleSave} />;
+            case 'Voie':
+                return <PathForm file={localFile} onSave={handleSave} gameId={gameId} />;
+            case 'Capacité':
+                return <CapacityForm file={localFile} onSave={handleSave} />;
             default:
                 return null;
         }
