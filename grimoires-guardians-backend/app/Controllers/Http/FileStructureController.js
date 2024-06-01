@@ -13,7 +13,9 @@ class FileStructureController {
             if (!game) {
                 return response.status(404).json({ error: 'Game not found' });
             }
-
+            if (type == 'hero') {
+                type = 'character'
+            }
             const field = `${type}_files_structure`;
             const updatedData = { [field]: JSON.stringify(structure) };
             await Database.table('games').where('id', gameId).update(updatedData);
@@ -34,7 +36,9 @@ class FileStructureController {
             if (!game) {
                 return response.status(404).json({ error: 'Game not found' });
             }
-
+            if (type == 'hero') {
+                type = 'character'
+            }
             const field = `${type}_files_structure`;
             const structure = JSON.parse(game[field] || '[]');
 

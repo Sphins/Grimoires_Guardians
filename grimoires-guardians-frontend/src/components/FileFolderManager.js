@@ -145,7 +145,7 @@ const FileFolderManager = ({ fileTypes, gameId, structureType }) => {
         } else if (structureType === 'note') {
             endpoint = `/api/note/${gameId}/${item.id}`;
         } else if (structureType === 'character') {
-            endpoint = `/api/character/${gameId}/${item.id}`;
+            endpoint = `/api/hero/${gameId}/${item.id}`;
         }
 
         try {
@@ -167,6 +167,7 @@ const FileFolderManager = ({ fileTypes, gameId, structureType }) => {
             setStructure(prevStructure => [...prevStructure, item]);
         }
     }, [structure, structureType, gameId]);
+
 
     const toggleFolder = (id) => {
         setOpenFolders((prevOpenFolders) =>
@@ -190,24 +191,24 @@ const FileFolderManager = ({ fileTypes, gameId, structureType }) => {
 
     const handleCreateItem = async () => {
         if (newItem.name.trim() === '' || (newItem.type === 'file' && newItem.fileType.trim() === '')) return;
-        let table = '';
+        let endpoint = '';
         if (structureType === 'item') {
-            table = 'create-file';
+            endpoint = `/api/game/${gameId}/create-file`;
         } else if (structureType === 'note') {
-            table = 'create-note';
+            endpoint = `/api/game/${gameId}/create-note`;
         } else if (structureType === 'character') {
-            table = 'create-character';
+            endpoint = `/api/game/${gameId}/create-hero`;
         }
 
         try {
-            const response = await api.post(`/api/game/${gameId}/${table}`, {
+            const response = await api.post(endpoint, {
                 name: newItem.name,
                 fileType: newItem.fileType,
                 data: {},
                 type: newItem.type // Ajoutez le type ici
             });
 
-            const newItemObject = response.data[structureType];
+            const newItemObject = response.data[structureType] || response.data.hero || response.data.note || response.data.item;
             newItemObject.type = newItem.type; // Assurez-vous que le type est défini
 
             const updatedStructure = JSON.parse(JSON.stringify(structure)); // Deep copy to prevent state mutation
@@ -248,6 +249,7 @@ const FileFolderManager = ({ fileTypes, gameId, structureType }) => {
             console.error('Error saving structure:', error);
         }
     };
+
 
     const loadStructure = async () => {
         if (!gameId) {
@@ -304,20 +306,29 @@ const FileFolderManager = ({ fileTypes, gameId, structureType }) => {
     const handleFileClick = async (file) => {
         try {
             let response;
+            let fileData;
+
             if (structureType === 'note') {
                 response = await api.get(`/api/game/${gameId}/notes/${file.id}`);
+                fileData = response.data.note;
             } else if (structureType === 'character') {
-                response = await api.get(`/api/character/${gameId}/${file.id}`);
+                response = await api.get(`/api/game/${gameId}/heroes/${file.id}`);
+                fileData = response.data.hero;
             } else {
                 response = await api.get(`/api/file/${file.id}`);
+                fileData = response.data.item;
             }
-            const fileData = response.data.item || response.data.note || response.data.character;
-            fileData.type = file.type; // Assurez-vous que le type est défini ici
+
+            if (!fileData.type) {
+                fileData.type = file.type; // Assurez-vous que le type est défini ici
+            }
+
             setEditFile(fileData);
         } catch (error) {
             console.error('Error loading file:', error);
         }
     };
+
 
 
     const handleSaveFile = async (updatedFile) => {
@@ -326,7 +337,7 @@ const FileFolderManager = ({ fileTypes, gameId, structureType }) => {
             if (structureType === 'note') {
                 endpoint = `/api/game/${gameId}/notes/${updatedFile.id}`;
             } else if (structureType === 'character') {
-                endpoint = `/api/character/${gameId}/${updatedFile.id}`;
+                endpoint = `/api/game/${gameId}/heroes/${updatedFile.id}`;
             } else {
                 endpoint = `/api/file/${updatedFile.id}`;
             }

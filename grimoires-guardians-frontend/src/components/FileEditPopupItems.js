@@ -10,6 +10,7 @@ import ProfileForm from './Items/ProfileForm';
 import PathForm from './Items/PathForm';
 import CapacityForm from './Items/CapacityForm';
 import NoteForm from './notes/NoteForm';
+import CharacterForm from './character/CharacterForm';
 
 const FileEditPopupItems = ({ open, file, onSave, onClose, gameId }) => {
     const [localFile, setLocalFile] = useState(file);
@@ -48,6 +49,9 @@ const FileEditPopupItems = ({ open, file, onSave, onClose, gameId }) => {
             case 'Privé': // Cas pour les notes privées
             case 'Public': // Cas pour les notes publiques
                 return <NoteForm file={localFile} onSave={handleSave} />;
+            case 'Héro': // Cas pour les héros (personnages)
+            case 'Créature': // Cas pour les créatures
+                return <CharacterForm file={localFile} onSave={handleSave} />;
             default:
                 return null;
         }
