@@ -28,6 +28,11 @@ Route.group(() => {
 
     Route.put('file/:fileId', 'FileStructureController.updateFile').middleware('auth');
     Route.get('file/:fileId', 'FileStructureController.loadFile').middleware('auth');
-    Route.delete('/file/:gameId/:fileId', 'FileStructureController.deleteFile').middleware('auth');
+    Route.delete('/file/:gameId/:noteId', 'FileStructureController.deleteFile').middleware('auth');
 
+    Route.get('game/:gameId/notes', 'NoteController.getNotes').middleware('auth');
+    Route.post('game/:gameId/create-note', 'NoteController.createNote').middleware('auth');
+    Route.get('game/:gameId/notes/:noteId', 'NoteController.loadNote').middleware('auth');
+    Route.put('game/:gameId/notes/:noteId', 'NoteController.updateNote').middleware('auth');
+    Route.delete('note/:gameId/:noteId', 'NoteController.deleteNote');
 }).prefix('api');

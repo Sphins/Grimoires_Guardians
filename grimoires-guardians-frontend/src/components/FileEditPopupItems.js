@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, AppBar, Toolbar, IconButton, Typography } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import WeaponForm from './popups/WeaponForm';
-import ArmorForm from './popups/ArmorForm';
-import AccesoireForm from './popups/AccesoireForm';
-import OtherItemForm from './popups/OtherItemForm';
-import RaceForm from './popups/RaceForm';
-import ProfileForm from './popups/ProfileForm';
-import PathForm from './popups/PathForm';
-import CapacityForm from './popups/CapacityForm';
+import WeaponForm from './Items/WeaponForm';
+import ArmorForm from './Items/ArmorForm';
+import AccesoireForm from './Items/AccesoireForm';
+import OtherItemForm from './Items/OtherItemForm';
+import RaceForm from './Items/RaceForm';
+import ProfileForm from './Items/ProfileForm';
+import PathForm from './Items/PathForm';
+import CapacityForm from './Items/CapacityForm';
 
-const FileEditPopup = ({ open, file, onSave, onClose, gameId }) => {
+const FileEditPopupItems = ({ open, file, onSave, onClose, gameId }) => {
     const [localFile, setLocalFile] = useState(file);
 
     useEffect(() => {
@@ -66,4 +66,4 @@ const FileEditPopup = ({ open, file, onSave, onClose, gameId }) => {
     );
 };
 
-export default FileEditPopup;
+export default FileEditPopupItems;

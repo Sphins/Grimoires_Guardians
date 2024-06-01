@@ -9,7 +9,7 @@ import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import api from '../services/api';
-import FileEditPopup from './FileEditPopup';
+import FileEditPopup from './FileEditPopupItems';
 
 const ItemTypes = {
     FOLDER: 'folder',
@@ -135,36 +135,38 @@ const FileFolderManager = ({ fileTypes, gameId, structureType }) => {
     }, [structure, findItem]);
 
     const deleteItem = useCallback(async (item) => {
-        if (item.type === 'file') {
-            try {
-                await api.delete(`/api/file/${gameId}/${item.id}`);
-            } catch (error) {
-                console.error('Error deleting item:', error);
-                return;
-            }
+        // Supprimez l'élément de la structure locale avant d'effectuer la requête API
+        const updatedStructure = structure.filter(i => i.id !== item.id);
+        setStructure(updatedStructure);
+
+        let endpoint = '';
+        if (structureType === 'item') {
+            endpoint = `/api/file/${gameId}/${item.id}`;
+        } else if (structureType === 'note') {
+            endpoint = `/api/note/${gameId}/${item.id}`;
+        } else if (structureType === 'character') {
+            endpoint = `/api/character/${gameId}/${item.id}`;
         }
 
-        const updatedStructure = JSON.parse(JSON.stringify(structure)); // Deep copy to prevent state mutation
+        try {
+            console.log('Deleting item with endpoint:', endpoint);
+            const response = await api.delete(endpoint);
 
-        const findItemAndRemove = (id, items) => {
-            for (let i = 0; i < items.length; i++) {
-                const item = items[i];
-                if (item.id === id) {
-                    items.splice(i, 1);
-                    return true;
-                }
-                if (item.children) {
-                    const found = findItemAndRemove(id, item.children);
-                    if (found) return true;
-                }
+            if (!response || response.status !== 200) {
+                const errorDetail = response.data;
+                throw new Error(errorDetail.error || 'Failed to delete item');
             }
-            return false;
-        };
 
-        findItemAndRemove(item.id, updatedStructure);
-        setStructure(updatedStructure);
-        saveStructure(updatedStructure); // Save structure after deleting item
-    }, [structure]);
+            // Envoyer la structure mise à jour au serveur
+            await saveStructure(updatedStructure);
+
+            console.log('Updated structure from server:', updatedStructure);
+        } catch (error) {
+            console.error('Error deleting item:', error);
+            // Restaurer la structure initiale en cas d'erreur
+            setStructure(prevStructure => [...prevStructure, item]);
+        }
+    }, [structure, structureType, gameId]);
 
     const toggleFolder = (id) => {
         setOpenFolders((prevOpenFolders) =>
@@ -188,16 +190,24 @@ const FileFolderManager = ({ fileTypes, gameId, structureType }) => {
 
     const handleCreateItem = async () => {
         if (newItem.name.trim() === '' || (newItem.type === 'file' && newItem.fileType.trim() === '')) return;
+        let table = '';
+        if (structureType === 'item') {
+            table = 'create-file';
+        } else if (structureType === 'note') {
+            table = 'create-note';
+        } else if (structureType === 'character') {
+            table = 'create-character';
+        }
 
         try {
-            const response = await api.post(`/api/game/${gameId}/create-file`, {
+            const response = await api.post(`/api/game/${gameId}/${table}`, {
                 name: newItem.name,
                 fileType: newItem.fileType,
-                type: newItem.type, // Assurez-vous que le type est défini ici
-                parentId: newItem.parentId
+                data: {},
+                type: newItem.type // Ajoutez le type ici
             });
 
-            const newItemObject = response.data.item;
+            const newItemObject = response.data[structureType];
             newItemObject.type = newItem.type; // Assurez-vous que le type est défini
 
             const updatedStructure = JSON.parse(JSON.stringify(structure)); // Deep copy to prevent state mutation
@@ -250,7 +260,6 @@ const FileFolderManager = ({ fileTypes, gameId, structureType }) => {
             });
             const structureData = response.data.structure || [];
 
-            // Assurez-vous que chaque élément a un type correctement défini
             const ensureType = (items) => {
                 return items.map(item => {
                     if (!item.type) {
@@ -264,6 +273,27 @@ const FileFolderManager = ({ fileTypes, gameId, structureType }) => {
             };
 
             const updatedStructure = ensureType(structureData);
+
+            if (structureType === 'item') {
+                const itemsResponse = await api.get(`/api/game/${gameId}/items`);
+                const dbFolder = {
+                    id: 'db-folder',
+                    name: 'DB',
+                    type: 'folder',
+                    children: itemsResponse.data.items.map(item => ({
+                        id: item.id,
+                        name: JSON.parse(item.data).name,
+                        type: 'file',
+                        fileType: JSON.parse(item.data).fileType,
+                        data: JSON.parse(item.data)
+                    }))
+                };
+
+                const dbFolderExists = updatedStructure.some(item => item.id === 'db-folder');
+                if (!dbFolderExists) {
+                    updatedStructure.push(dbFolder);
+                }
+            }
 
             setStructure(updatedStructure);
         } catch (error) {
@@ -322,6 +352,10 @@ const FileFolderManager = ({ fileTypes, gameId, structureType }) => {
     useEffect(() => {
         loadStructure();
     }, [structureType, gameId]);
+
+    useEffect(() => {
+        console.log('Updated structure after deletion:', structure);
+    }, [structure]);
 
     return (
         <DndProvider backend={HTML5Backend}>
@@ -414,7 +448,6 @@ const FileFolderManager = ({ fileTypes, gameId, structureType }) => {
                         onClose={() => setEditFile(null)}
                         file={editFile}
                         onSave={handleSaveFile}
-                        gameId={gameId}
                     />
                 )}
             </Box>
