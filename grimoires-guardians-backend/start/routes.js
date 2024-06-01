@@ -23,6 +23,8 @@ Route.group(() => {
     Route.post('game/:gameId/create-file', 'FileStructureController.createFile').middleware('auth');
     Route.get('game/:gameId/items', 'FileStructureController.loadItems').middleware('auth');
     Route.get('game/:gameId/items/capacities', 'ItemController.getCapacities').middleware('auth');
+    Route.get('/game/:gameId/items/paths', 'ItemController.getPaths').middleware('auth');
+
 
     Route.put('file/:fileId', 'FileStructureController.updateFile').middleware('auth');
     Route.get('file/:fileId', 'FileStructureController.loadFile').middleware('auth');

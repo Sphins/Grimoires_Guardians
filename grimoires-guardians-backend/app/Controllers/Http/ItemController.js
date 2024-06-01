@@ -47,6 +47,30 @@ class ItemController {
             return response.status(500).json({ error: 'Failed to fetch items' });
         }
     }
+
+    async getPaths({ params, response }) {
+        try {
+            const items = await Item.query()
+                .where('game_id', params.gameId)
+                .fetch();
+
+            const paths = items.toJSON().filter(item => {
+                const data = JSON.parse(item.data);
+                return data.fileType === 'Voie';
+            });
+
+            return response.json({
+                success: true,
+                paths: paths
+            });
+        } catch (error) {
+            console.error('Error fetching paths:', error);
+            return response.status(500).json({
+                success: false,
+                message: 'Failed to fetch paths'
+            });
+        }
+    }
 }
 
 module.exports = ItemController;

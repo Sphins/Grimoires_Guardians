@@ -39,7 +39,7 @@ const FileEditPopup = ({ open, file, onSave, onClose, gameId }) => {
             case 'Peuple':
                 return <RaceForm file={localFile} onSave={handleSave} />;
             case 'Profil':
-                return <ProfileForm file={localFile} onSave={handleSave} />;
+                return <ProfileForm file={localFile} onSave={handleSave} gameId={gameId} />;
             case 'Voie':
                 return <PathForm file={localFile} onSave={handleSave} gameId={gameId} />;
             case 'Capacité':
