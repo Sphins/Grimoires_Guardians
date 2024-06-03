@@ -46,11 +46,11 @@ const FileEditPopupItems = ({ open, file, onSave, onClose, gameId }) => {
                 return <PathForm file={localFile} onSave={handleSave} gameId={gameId} />;
             case 'Capacité':
                 return <CapacityForm file={localFile} onSave={handleSave} />;
-            case 'Privé': // Cas pour les notes privées
-            case 'Public': // Cas pour les notes publiques
+            case 'Privé':
+            case 'Public':
                 return <NoteForm file={localFile} onSave={handleSave} />;
-            case 'Héro': // Cas pour les héros (personnages)
-            case 'Créature': // Cas pour les créatures
+            case 'Héro':
+            case 'Créature':
                 return <CharacterForm file={localFile} onSave={handleSave} />;
             default:
                 return null;
@@ -58,7 +58,7 @@ const FileEditPopupItems = ({ open, file, onSave, onClose, gameId }) => {
     };
 
     return (
-        <Dialog open={open} onClose={handleSaveAndClose} fullWidth>
+        <Dialog open={open} onClose={handleSaveAndClose} maxWidth={false} fullWidth>
             <AppBar position="static">
                 <Toolbar>
                     <Typography variant="h6" style={{ flexGrow: 1 }}>
@@ -69,7 +69,9 @@ const FileEditPopupItems = ({ open, file, onSave, onClose, gameId }) => {
                     </IconButton>
                 </Toolbar>
             </AppBar>
-            <DialogContent>{renderForm()}</DialogContent>
+            <DialogContent style={{ minWidth: '300px', maxWidth: '90vw', overflowX: 'auto' }}>
+                {renderForm()}
+            </DialogContent>
         </Dialog>
     );
 };
