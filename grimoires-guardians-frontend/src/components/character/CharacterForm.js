@@ -3,7 +3,7 @@ import { MenuItem, Select, InputBase, IconButton, Button, Box, Typography } from
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faDiceD20 } from '@fortawesome/free-solid-svg-icons';
 import api from '../../services/api';
-import { ChatContext } from './ChatContext';
+import { ChatContext } from './ChatContext'; // Assurez-vous que le chemin est correct
 
 const CharacterForm = ({ file, onSave, gameId, onClose, setTabIndex }) => {
     const [name, setName] = useState(file.name || '');
@@ -57,7 +57,6 @@ const CharacterForm = ({ file, onSave, gameId, onClose, setTabIndex }) => {
                 const response = await api.get(`/api/game/${gameId}/items/profiles`);
                 setProfils(response.data.profiles.map(item => {
                     const data = JSON.parse(item.data);
-                    setProfileTraits(data.traits);
                     return data;
                 }));
             } catch (error) {
@@ -70,7 +69,6 @@ const CharacterForm = ({ file, onSave, gameId, onClose, setTabIndex }) => {
                 const response = await api.get(`/api/game/${gameId}/items/peuples`);
                 setRaces(response.data.profiles.map(item => {
                     const data = JSON.parse(item.data);
-                    setRaceTraits(data.traits);
                     return data;
                 }));
             } catch (error) {
@@ -78,13 +76,26 @@ const CharacterForm = ({ file, onSave, gameId, onClose, setTabIndex }) => {
             }
         };
 
+        fetchProfils();
+        fetchRaces();
+    }, [gameId]);
+
+    useEffect(() => {
+        const selectedProfile = profils.find(profile => profile.name === classType);
+        const selectedRace = races.find(race => race.name === species);
+
+        if (selectedProfile) {
+            setProfileTraits(selectedProfile.traits);
+        }
+        if (selectedRace) {
+            setRaceTraits(selectedRace.traits);
+        }
+
         setTotalAddress(+address + +raceTraits.adresse + +profileTraits.adresse);
         setTotalSpirit(+spirit + +raceTraits.esprit + +profileTraits.esprit);
         setTotalPower(+power + +raceTraits.puissance + +profileTraits.puissance);
 
-        fetchProfils();
-        fetchRaces();
-    }, [gameId, address, spirit, power, raceTraits, profileTraits]);
+    }, [classType, species, address, spirit, power, profils, races, raceTraits, profileTraits]);
 
     const handleSave = () => {
         const updatedFile = {
@@ -119,9 +130,20 @@ const CharacterForm = ({ file, onSave, gameId, onClose, setTabIndex }) => {
 
     const rollDice = (value, traitType) => {
         const message = `/r 1d20 + ${value}`;
-        handleSendMessage(message, name, traitType);
-        onClose();
-        setTabIndex(0);
+        handleSendMessage(message, name, traitType); // Passez le nom du personnage et le type de trait ici
+        onClose(); // Ferme la fiche de personnage
+        setTabIndex(0); // Bascule vers l'onglet de chat (assurez-vous que 0 est l'index du chat)
+    };
+
+    const handleAttack = () => {
+        const attackRollMessage = `/r 1d20 + ${weapon}`;
+        const damageRollMessage = `/r ${damage}`;
+
+        handleSendMessage(attackRollMessage, name, 'attaque');
+        handleSendMessage(damageRollMessage, name, 'dégâts');
+
+        onClose(); // Ferme la fiche de personnage
+        setTabIndex(0); // Bascule vers l'onglet de chat (assurez-vous que 0 est l'index du chat)
     };
 
     const renderStatsSection = () => (
@@ -346,7 +368,7 @@ const CharacterForm = ({ file, onSave, gameId, onClose, setTabIndex }) => {
                                 width: '50px'
                             }}
                         />
-                        <IconButton>
+                        <IconButton onClick={handleAttack}>
                             <FontAwesomeIcon icon={faDiceD20} className="text-red-600" />
                         </IconButton>
                     </div>
@@ -366,9 +388,6 @@ const CharacterForm = ({ file, onSave, gameId, onClose, setTabIndex }) => {
                                 width: '75px'
                             }}
                         />
-                        <IconButton>
-                            <FontAwesomeIcon icon={faDiceD20} className="text-red-600" />
-                        </IconButton>
                     </div>
                 </div>
             </div>
