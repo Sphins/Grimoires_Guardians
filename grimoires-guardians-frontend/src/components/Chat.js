@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useContext, useState, useRef } from 'react';
 import { Box, TextField, Button, Typography, Paper, List } from '@mui/material';
-import { rollDice } from '../utils/diceRoller';
 import api from '../services/api';
 import Message from './Message';
+import { ChatContext } from './character/ChatContext';
 
 const Chat = ({ gameId }) => {
-    const [messages, setMessages] = useState([]);
-    const [messageInput, setMessageInput] = useState('');
-    const [userName, setUserName] = useState('');
+    const { messages, messageInput, setMessageInput, handleSendMessage, addMessage } = useContext(ChatContext);
+    const [userName, setUserName] = useState('System');
+    const messagesEndRef = useRef(null);
 
     useEffect(() => {
         const fetchUserName = async () => {
@@ -32,7 +32,13 @@ const Chat = ({ gameId }) => {
                         Authorization: `Bearer ${token}`
                     }
                 });
-                setMessages(response.data.data || []);
+                if (response.data && response.data.data) {
+                    response.data.data.forEach(msg => {
+                        if (!messages.some(message => message.text === msg.text && message.user === msg.user)) {
+                            addMessage(msg);
+                        }
+                    });
+                }
             } catch (error) {
                 console.error('Error fetching chat history', error);
             }
@@ -40,46 +46,14 @@ const Chat = ({ gameId }) => {
 
         fetchUserName();
         fetchChatHistory();
-    }, [gameId]);
+    }, [gameId, messages, addMessage]);
 
-    const handleDiceRoll = (command) => {
-        const { rolls, total } = rollDice(command);
-        return { rolls, total };
-    };
+    useEffect(() => {
+        scrollToBottom();
+    }, [messages]);
 
-    const handleSendMessage = async () => {
-        if (messageInput.trim() !== '') {
-            let message = { user: userName, text: messageInput };
-            if (messageInput.startsWith('/r ')) {
-                const command = messageInput.substring(3);
-                const { rolls, total } = handleDiceRoll(command);
-                message = {
-                    user: userName,
-                    text: `${total}`,
-                    isDiceRoll: true,
-                    command,
-                    rolls,
-                    total
-                };
-            }
-            const newMessages = [...messages, message];
-            setMessages(newMessages);
-            setMessageInput('');
-
-            // Sauvegarder l'historique du chat
-            try {
-                const token = localStorage.getItem('token');
-                await api.post(`/api/game/${gameId}/save-chat-history`, {
-                    history: newMessages
-                }, {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                });
-            } catch (error) {
-                console.error('Error saving chat history', error);
-            }
-        }
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
 
     const handleInputChange = (event) => {
@@ -89,11 +63,14 @@ const Chat = ({ gameId }) => {
     const handleKeyPress = (event) => {
         if (event.key === 'Enter') {
             event.preventDefault();
-            handleSendMessage();
+            handleSendMessage(messageInput, userName);
         }
     };
 
     const getResultColor = (total, rolls, sides) => {
+        if (!rolls || !Array.isArray(rolls)) {
+            return 'inherit';
+        }
         if (sides === 20) {
             if (rolls.includes(1)) {
                 return 'red';
@@ -115,16 +92,18 @@ const Chat = ({ gameId }) => {
                             user={message.user}
                             text={
                                 message.isDiceRoll ? (
-                                    <Typography variant="h4" component="span" style={{ color: getResultColor(message.total, message.rolls, parseInt(message.command.split('d')[1])) }}>
+                                    <Typography variant="h4" component="span" style={{ color: getResultColor(message.total, message.rolls, message.command ? parseInt(message.command.split('d')[1]) : 20) }}>
                                         {message.text}
                                     </Typography>
                                 ) : (
                                     message.text
                                 )
                             }
-                            details={message.isDiceRoll ? `(${message.command}: ${message.rolls.join(', ')})` : undefined}
+                            details={message.isDiceRoll && message.rolls ? `(${message.command}: ${message.rolls.join(', ')})` : undefined}
+                            traitType={message.traitType} // Passez le type de trait ici
                         />
                     ))}
+                    <div ref={messagesEndRef} />
                 </List>
             </Paper>
             <Box display="flex" alignItems="center">
@@ -141,7 +120,7 @@ const Chat = ({ gameId }) => {
                     variant="contained"
                     color="primary"
                     style={{ marginLeft: '8px', marginTop: '16px', height: '56px' }}
-                    onClick={handleSendMessage}
+                    onClick={() => handleSendMessage(messageInput, userName)}
                 >
                     Envoyer
                 </Button>

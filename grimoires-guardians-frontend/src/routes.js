@@ -1,3 +1,4 @@
+// routes.js
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import Login from './components/Login';
@@ -8,6 +9,7 @@ import JoinGame from './components/JoinGame';
 import ManageAccount from './components/ManageAccount';
 import ManageGames from './components/ManageGames';
 import GameEnvironment from './components/GameEnvironment';
+import { ChatProvider } from './components/character/ChatContext';
 
 const routes = [
     {
@@ -44,7 +46,11 @@ const routes = [
     },
     {
         path: '/jeu/:id',
-        element: <GameEnvironment />
+        element: (
+            <ChatProvider>
+                <GameEnvironment />
+            </ChatProvider>
+        )
     }
 ];
 

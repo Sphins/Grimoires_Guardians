@@ -1,6 +1,7 @@
+// src/utils/diceRoller.js
 export const rollDice = (command) => {
     // Mise à jour de la regex pour inclure la partie additionnelle
-    const match = command.match(/(\d*)d(\d+)([ad])?(?:\s*\+\s*(\d+))?/);
+    const match = command ? command.match(/(\d*)d(\d+)([ad])?(?:\s*\+\s*(\d+))?/) : null;
     if (!match) {
         return { result: 'Invalid command', rolls: [], total: 0 };
     }

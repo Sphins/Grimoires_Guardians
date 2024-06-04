@@ -1,15 +1,16 @@
 import React from 'react';
-import { Box, Typography } from '@mui/material';
 import FileFolderManager from './FileFolderManager';
 
-const CharacterManagement = ({ gameId }) => {
-    const fileTypes = ['Héro', 'Créature'];
+const CharacterManagement = ({ gameId, setTabIndex }) => {
+    const fileTypes = ["Héro", "Créature"]; // Ajoutez les types de fichiers que vous utilisez
 
     return (
-        <Box>
-            <Typography variant="h5" gutterBottom>Gestion des Personnages</Typography>
-            <FileFolderManager fileTypes={fileTypes} gameId={gameId} structureType="character" />
-        </Box>
+        <FileFolderManager
+            gameId={gameId}
+            fileTypes={fileTypes}
+            structureType="character"
+            setTabIndex={setTabIndex}
+        />
     );
 };
 

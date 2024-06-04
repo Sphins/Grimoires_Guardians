@@ -1,7 +1,7 @@
 import React from 'react';
 import { ListItem, ListItemText, Typography, Box, Paper } from '@mui/material';
 
-const Message = ({ user, text, details }) => {
+const Message = ({ user, text, details, traitType }) => {
     const isDiceRoll = details !== undefined;
 
     return (
@@ -14,6 +14,11 @@ const Message = ({ user, text, details }) => {
                                 <Typography variant="h6" component="div" style={{ textAlign: 'left' }}>
                                     {user}
                                 </Typography>
+                                {traitType && (
+                                    <Typography variant="body2" component="div" style={{ color: 'gray', textAlign: 'center' }}>
+                                        {traitType}
+                                    </Typography>
+                                )}
                                 <Typography variant="h4" component="div" style={{ fontWeight: 'bold' }}>
                                     {text}
                                 </Typography>

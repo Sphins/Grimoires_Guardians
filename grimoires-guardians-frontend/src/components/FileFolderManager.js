@@ -9,7 +9,7 @@ import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import api from '../services/api';
-import FileEditPopup from './FileEditPopupItems';
+import FileEditPopupItems from './FileEditPopupItems';
 
 const ItemTypes = {
     FOLDER: 'folder',
@@ -78,7 +78,7 @@ const DraggableItem = ({ item, index, moveItem, findItem, parentId, level, toggl
     );
 };
 
-const FileFolderManager = ({ fileTypes, gameId, structureType }) => {
+const FileFolderManager = ({ fileTypes, gameId, structureType, setTabIndex }) => {
     const [structure, setStructure] = useState([]);
     const [openFolders, setOpenFolders] = useState([]);
     const [openDialog, setOpenDialog] = useState(false);
@@ -468,12 +468,13 @@ const FileFolderManager = ({ fileTypes, gameId, structureType }) => {
                     </DialogActions>
                 </Dialog>
                 {editFile && (
-                    <FileEditPopup
+                    <FileEditPopupItems
                         open={Boolean(editFile)}
                         onClose={() => setEditFile(null)}
                         file={editFile}
                         onSave={handleSaveFile}
                         gameId={gameId}
+                        setTabIndex={setTabIndex} // Ajoutez cette ligne pour passer setTabIndex
                     />
                 )}
             </Box>

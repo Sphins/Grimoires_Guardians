@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Box, Tabs, Tab, Paper, Tooltip } from '@mui/material';
-import { useParams } from 'react-router-dom'; // Importer useParams pour obtenir les paramètres de l'URL
+import { useParams } from 'react-router-dom';
 import Chat from './Chat';
 import CharacterManagement from './CharacterManagement';
 import Items from './ItemManagement ';
@@ -13,13 +13,12 @@ import NotesIcon from '@mui/icons-material/Note';
 import SettingsIcon from '@mui/icons-material/Settings';
 
 const GameEnvironment = () => {
-    const { id: gameId } = useParams(); // Obtenir gameId depuis les paramètres de l'URL
+    const { id: gameId } = useParams();
     const [tabIndex, setTabIndex] = useState(0);
-    const [fileType, setFileType] = useState('video'); // 'image' or 'video'
-    const [muted, setMuted] = useState(true); // state to control video sound
-    const videoRef = useRef(null); // Reference to the video element
+    const [fileType, setFileType] = useState('video');
+    const [muted, setMuted] = useState(true);
+    const videoRef = useRef(null);
 
-    // Lien en dur vers la vidéo sur le back-end
     const filePath = 'http://localhost:3333/videos/runic_circle.m4v';
 
     useEffect(() => {
@@ -104,7 +103,7 @@ const GameEnvironment = () => {
                 </Paper>
                 <Box className="tab-content" flex="1" overflow="auto">
                     {tabIndex === 0 && <Chat gameId={gameId} />}
-                    {tabIndex === 1 && <CharacterManagement gameId={gameId} />}
+                    {tabIndex === 1 && <CharacterManagement gameId={gameId} setTabIndex={setTabIndex} />}
                     {tabIndex === 2 && <Items gameId={gameId} />}
                     {tabIndex === 3 && <Notes gameId={gameId} />}
                     {tabIndex === 4 && <GameManagement gameId={gameId} />}

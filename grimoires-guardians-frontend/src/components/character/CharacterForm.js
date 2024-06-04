@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { MenuItem, Select, InputBase, IconButton, Button, Box, Typography } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faDiceD20 } from '@fortawesome/free-solid-svg-icons';
 import api from '../../services/api';
+import { ChatContext } from './ChatContext';
 
-const CharacterForm = ({ file, onSave, gameId }) => {
+const CharacterForm = ({ file, onSave, gameId, onClose, setTabIndex }) => {
     const [name, setName] = useState(file.name || '');
     const [classType, setClassType] = useState(file.data?.classType || '');
     const [species, setSpecies] = useState(file.data?.species || '');
@@ -30,7 +31,7 @@ const CharacterForm = ({ file, onSave, gameId }) => {
     const [totalSpirit, setTotalSpirit] = useState(0);
     const [totalPower, setTotalPower] = useState(0);
 
-
+    const { handleSendMessage } = useContext(ChatContext);
 
     useEffect(() => {
         setName(file.name || '');
@@ -116,12 +117,12 @@ const CharacterForm = ({ file, onSave, gameId }) => {
         setWounds(newWounds);
     };
 
-    const rollDice = (value) => {
+    const rollDice = (value, traitType) => {
         const message = `/r 1d20 + ${value}`;
-        setMessageInput(message);
-        handleSendMessage();
+        handleSendMessage(message, name, traitType);
+        onClose();
+        setTabIndex(0);
     };
-
 
     const renderStatsSection = () => (
         <div className="flex lg:flex-row gap-4">
@@ -272,7 +273,7 @@ const CharacterForm = ({ file, onSave, gameId }) => {
                                 width: '50px'
                             }}
                         />
-                        <IconButton onClick={() => rollDice(totalAddress)}>
+                        <IconButton onClick={() => rollDice(totalAddress, 'adresse')}>
                             <FontAwesomeIcon icon={faDiceD20} className="text-red-600" />
                         </IconButton>
                     </div>
@@ -292,7 +293,7 @@ const CharacterForm = ({ file, onSave, gameId }) => {
                                 width: '50px'
                             }}
                         />
-                        <IconButton onClick={() => rollDice(totalSpirit)}>
+                        <IconButton onClick={() => rollDice(totalSpirit, 'esprit')}>
                             <FontAwesomeIcon icon={faDiceD20} className="text-red-600" />
                         </IconButton>
                     </div>
@@ -312,7 +313,7 @@ const CharacterForm = ({ file, onSave, gameId }) => {
                                 width: '50px'
                             }}
                         />
-                        <IconButton onClick={() => rollDice(totalPower)}>
+                        <IconButton onClick={() => rollDice(totalPower, 'puissance')}>
                             <FontAwesomeIcon icon={faDiceD20} className="text-red-600" />
                         </IconButton>
                     </div>

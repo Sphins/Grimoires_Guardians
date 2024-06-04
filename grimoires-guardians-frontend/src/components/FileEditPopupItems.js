@@ -12,7 +12,7 @@ import CapacityForm from './Items/CapacityForm';
 import NoteForm from './notes/NoteForm';
 import CharacterForm from './character/CharacterForm';
 
-const FileEditPopupItems = ({ open, file, onSave, onClose, gameId }) => {
+const FileEditPopupItems = ({ open, file, onSave, onClose, gameId, setTabIndex }) => {
     const [localFile, setLocalFile] = useState(file);
 
     useEffect(() => {
@@ -51,7 +51,7 @@ const FileEditPopupItems = ({ open, file, onSave, onClose, gameId }) => {
                 return <NoteForm file={localFile} onSave={handleSave} />;
             case 'Héro':
             case 'Créature':
-                return <CharacterForm file={localFile} onSave={handleSave} gameId={gameId} />;
+                return <CharacterForm file={localFile} onSave={handleSave} gameId={gameId} onClose={onClose} setTabIndex={setTabIndex} />;
             default:
                 return null;
         }
