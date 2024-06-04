@@ -149,7 +149,6 @@ const FileFolderManager = ({ fileTypes, gameId, structureType }) => {
         }
 
         try {
-            console.log('Deleting item with endpoint:', endpoint);
             const response = await api.delete(endpoint);
 
             if (!response || response.status !== 200) {
@@ -160,7 +159,6 @@ const FileFolderManager = ({ fileTypes, gameId, structureType }) => {
             // Envoyer la structure mise à jour au serveur
             await saveStructure(updatedStructure);
 
-            console.log('Updated structure from server:', updatedStructure);
         } catch (error) {
             console.error('Error deleting item:', error);
             // Restaurer la structure initiale en cas d'erreur
@@ -329,8 +327,6 @@ const FileFolderManager = ({ fileTypes, gameId, structureType }) => {
         }
     };
 
-
-
     const handleSaveFile = async (updatedFile) => {
         try {
             let endpoint;
@@ -342,11 +338,13 @@ const FileFolderManager = ({ fileTypes, gameId, structureType }) => {
                 endpoint = `/api/file/${updatedFile.id}`;
             }
 
+
             const response = await api.put(endpoint, {
                 name: updatedFile.name,
                 data: updatedFile.data,
-                type: updatedFile.type // Ajoutez le type ici
+                type: updatedFile.type // Ajoutez le type ici si nécessaire
             });
+
 
             const updatedItem = response.data.item || response.data.note || response.data.character;
             updatedItem.type = updatedFile.type; // Assurez-vous que le type est défini
@@ -362,7 +360,6 @@ const FileFolderManager = ({ fileTypes, gameId, structureType }) => {
             console.error('Error updating item:', error);
         }
     };
-
 
     const handleConfirmDelete = (item) => {
         setConfirmDeleteDialog({ open: true, item });
@@ -383,7 +380,6 @@ const FileFolderManager = ({ fileTypes, gameId, structureType }) => {
     }, [structureType, gameId]);
 
     useEffect(() => {
-        console.log('Updated structure after deletion:', structure);
     }, [structure]);
 
     return (
@@ -477,6 +473,7 @@ const FileFolderManager = ({ fileTypes, gameId, structureType }) => {
                         onClose={() => setEditFile(null)}
                         file={editFile}
                         onSave={handleSaveFile}
+                        gameId={gameId}
                     />
                 )}
             </Box>

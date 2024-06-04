@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { MenuItem, Select, InputBase, IconButton, Button, Box, Typography } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faDiceD20 } from '@fortawesome/free-solid-svg-icons';
+import api from '../../services/api';
 
-const CharacterForm = ({ file, onSave }) => {
+const CharacterForm = ({ file, onSave, gameId }) => {
     const [name, setName] = useState(file.name || '');
     const [classType, setClassType] = useState(file.data?.classType || '');
     const [species, setSpecies] = useState(file.data?.species || '');
@@ -18,10 +19,18 @@ const CharacterForm = ({ file, onSave }) => {
     const [weapon, setWeapon] = useState(file.data?.weapon || '');
     const [damage, setDamage] = useState(file.data?.damage || '');
     const [equipment, setEquipment] = useState(file.data?.equipment || '');
-    const [editName, setEditName] = useState(false);
     const [level, setLevel] = useState(file.data?.niveau || '');
-    const [initialFile, setInitialFile] = useState(file);
-    const [currentSection, setCurrentSection] = useState('stats'); // State to handle section
+    const [editName, setEditName] = useState(false);
+    const [currentSection, setCurrentSection] = useState('stats');
+    const [profils, setProfils] = useState([]);
+    const [races, setRaces] = useState([]);
+    const [raceTraits, setRaceTraits] = useState({ adresse: 0, esprit: 0, puissance: 0 });
+    const [profileTraits, setProfileTraits] = useState({ adresse: 0, esprit: 0, puissance: 0 });
+    const [totalAddress, setTotalAddress] = useState(0);
+    const [totalSpirit, setTotalSpirit] = useState(0);
+    const [totalPower, setTotalPower] = useState(0);
+
+
 
     useEffect(() => {
         setName(file.name || '');
@@ -39,42 +48,66 @@ const CharacterForm = ({ file, onSave }) => {
         setWeapon(file.data?.weapon || '');
         setDamage(file.data?.damage || '');
         setEquipment(file.data?.equipment || '');
-        setInitialFile(file);
     }, [file]);
 
     useEffect(() => {
-        if (initialFile !== file) {
-            onSave({
-                ...file,
-                name,
-                data: {
-                    ...file.data,
-                    classType,
-                    species,
-                    background,
-                    level,
-                    actionPoints,
-                    hitPoints,
-                    wounds,
-                    address,
-                    spirit,
-                    power,
-                    defense,
-                    weapon,
-                    damage,
-                    equipment,
-                }
-            });
-            setInitialFile(file);
-        }
-    }, [name, classType, species, background, level, actionPoints, hitPoints, wounds, address, spirit, power, defense, weapon, damage, equipment, file, onSave, initialFile]);
+        const fetchProfils = async () => {
+            try {
+                const response = await api.get(`/api/game/${gameId}/items/profiles`);
+                setProfils(response.data.profiles.map(item => {
+                    const data = JSON.parse(item.data);
+                    setProfileTraits(data.traits);
+                    return data;
+                }));
+            } catch (error) {
+                console.error('Failed to fetch profiles', error);
+            }
+        };
 
-    const handleNameClick = () => {
-        setEditName(true);
-    };
+        const fetchRaces = async () => {
+            try {
+                const response = await api.get(`/api/game/${gameId}/items/peuples`);
+                setRaces(response.data.profiles.map(item => {
+                    const data = JSON.parse(item.data);
+                    setRaceTraits(data.traits);
+                    return data;
+                }));
+            } catch (error) {
+                console.error('Failed to fetch races', error);
+            }
+        };
 
-    const handleNameBlur = () => {
-        setEditName(false);
+        setTotalAddress(+address + +raceTraits.adresse + +profileTraits.adresse);
+        setTotalSpirit(+spirit + +raceTraits.esprit + +profileTraits.esprit);
+        setTotalPower(+power + +raceTraits.puissance + +profileTraits.puissance);
+
+        fetchProfils();
+        fetchRaces();
+    }, [gameId, address, spirit, power, raceTraits, profileTraits]);
+
+    const handleSave = () => {
+        const updatedFile = {
+            ...file,
+            name,
+            data: {
+                ...file.data,
+                classType,
+                species,
+                background,
+                level,
+                actionPoints,
+                hitPoints,
+                wounds,
+                address,
+                spirit,
+                power,
+                defense,
+                weapon,
+                damage,
+                equipment,
+            }
+        };
+        onSave(updatedFile);
     };
 
     const handleWoundsChange = (index) => {
@@ -83,9 +116,15 @@ const CharacterForm = ({ file, onSave }) => {
         setWounds(newWounds);
     };
 
+    const rollDice = (value) => {
+        const message = `/r 1d20 + ${value}`;
+        setMessageInput(message);
+        handleSendMessage();
+    };
+
+
     const renderStatsSection = () => (
         <div className="flex lg:flex-row gap-4">
-            {/* Bloc Image */}
             <div>
                 <div className="flex-1">
                     <div
@@ -102,12 +141,11 @@ const CharacterForm = ({ file, onSave }) => {
                     ></textarea>
                 </div>
             </div>
-            {/* Bloc Central */}
             <div className="flex-1 space-y-4">
                 <div className="relative flex items-center space-x-2 p-2 border border-red-600 rounded space-y-2">
                     <label
                         className={`text-gray-700 text-lg font-bold cursor-pointer ${editName ? 'hidden' : ''}`}
-                        onClick={handleNameClick}
+                        onClick={() => setEditName(true)}
                     >
                         Nom :
                     </label>
@@ -116,23 +154,25 @@ const CharacterForm = ({ file, onSave }) => {
                         className={`p-2 ${editName ? '' : 'hidden'}`}
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        onBlur={handleNameBlur}
+                        onBlur={() => setEditName(false)}
                         autoFocus={editName}
                         style={{ color: '#dc2626', border: 'none', outline: 'none', backgroundColor: 'transparent', fontWeight: 'bold' }}
                     />
                 </div>
                 <div className="flex space-x-2 items-center p-2 border border-red-600 rounded space-y-2">
                     <div className="flex-1">
-                        <label className="block text-gray-700 text-sm font-bold text-red-600">Classe</label>
+                        <label className="block text-gray-700 text-sm font-bold text-red-600">Profil</label>
                         <Select
                             className="w-full p-2"
                             value={classType}
                             onChange={(e) => setClassType(e.target.value)}
                             size="small"
                         >
-                            <MenuItem value="Guerrier">Guerrier</MenuItem>
-                            <MenuItem value="Mage">Mage</MenuItem>
-                            <MenuItem value="Archer">Archer</MenuItem>
+                            {profils.map((profil) => (
+                                <MenuItem key={profil.id} value={profil.name}>
+                                    {profil.name}
+                                </MenuItem>
+                            ))}
                         </Select>
                     </div>
                     <div className="text-gray-700 text-sm font-bold mx-2">-</div>
@@ -144,9 +184,11 @@ const CharacterForm = ({ file, onSave }) => {
                             onChange={(e) => setSpecies(e.target.value)}
                             size="small"
                         >
-                            <MenuItem value="Elfe">Elfe</MenuItem>
-                            <MenuItem value="Humain">Humain</MenuItem>
-                            <MenuItem value="Nain">Nain</MenuItem>
+                            {races.map((race) => (
+                                <MenuItem key={race.id} value={race.name}>
+                                    {race.name}
+                                </MenuItem>
+                            ))}
                         </Select>
                     </div>
                 </div>
@@ -159,7 +201,6 @@ const CharacterForm = ({ file, onSave }) => {
                     ></textarea>
                 </div>
             </div>
-            {/* Bloc Droit */}
             <div className="flex-1 space-y-4">
                 <div className="flex items-center space-x-2">
                     <div className="text-xl font-bold text-red-600">Niveau</div>
@@ -181,38 +222,25 @@ const CharacterForm = ({ file, onSave }) => {
                 <div className="p-2 border border-red-600 rounded space-y-2">
                     <div className="flex items-center justify-between">
                         <label className="block text-gray-700 text-sm font-bold">Points d'action :</label>
-                        <InputBase
-                            type="number"
-                            value={actionPoints}
-                            onChange={(e) => setActionPoints(e.target.value)}
-                            inputProps={{ 'aria-label': 'action' }}
-                            className="border border-gray-300 p-2 rounded"
+                        <span
                             style={{
-                                border: 'none',
-                                outline: 'none',
-                                backgroundColor: 'transparent',
                                 fontWeight: 'bold',
                                 color: '#dc2626',
-                                width: '50px'
                             }}
-                        />
+                        >
+                            {2 + totalSpirit}
+                        </span>
                     </div>
                     <div className="flex items-center justify-between">
                         <label className="block text-gray-700 text-sm font-bold">Points de vie :</label>
-                        <InputBase
-                            type="number"
-                            value={hitPoints}
-                            onChange={(e) => setHitPoints(e.target.value)}
-                            inputProps={{ 'aria-label': 'hitPoints' }}
+                        <span
                             style={{
-                                border: 'none',
-                                outline: 'none',
-                                backgroundColor: 'transparent',
                                 fontWeight: 'bold',
                                 color: '#dc2626',
-                                width: '50px'
                             }}
-                        />
+                        >
+                            {10 + (2 * totalPower)}
+                        </span>
                     </div>
                     <div className="flex items-center space-x-2">
                         <div className="block text-gray-700 text-sm font-bold">Blessures :</div>
@@ -232,9 +260,9 @@ const CharacterForm = ({ file, onSave }) => {
                         <div className="block text-gray-700 text-sm font-bold">Adresse :</div>
                         <InputBase
                             type="number"
-                            value={address}
+                            value={totalAddress}
                             onChange={(e) => setAddress(e.target.value)}
-                            inputProps={{ 'aria-label': 'address' }}
+                            inputProps={{ 'aria-label': 'address', min: 0 }}
                             style={{
                                 border: 'none',
                                 outline: 'none',
@@ -244,7 +272,7 @@ const CharacterForm = ({ file, onSave }) => {
                                 width: '50px'
                             }}
                         />
-                        <IconButton>
+                        <IconButton onClick={() => rollDice(totalAddress)}>
                             <FontAwesomeIcon icon={faDiceD20} className="text-red-600" />
                         </IconButton>
                     </div>
@@ -252,9 +280,9 @@ const CharacterForm = ({ file, onSave }) => {
                         <div className="block text-gray-700 text-sm font-bold">Esprit :</div>
                         <InputBase
                             type="number"
-                            value={spirit}
+                            value={totalSpirit}
                             onChange={(e) => setSpirit(e.target.value)}
-                            inputProps={{ 'aria-label': 'spirit' }}
+                            inputProps={{ 'aria-label': 'spirit', min: 0 }}
                             style={{
                                 border: 'none',
                                 outline: 'none',
@@ -264,7 +292,7 @@ const CharacterForm = ({ file, onSave }) => {
                                 width: '50px'
                             }}
                         />
-                        <IconButton>
+                        <IconButton onClick={() => rollDice(totalSpirit)}>
                             <FontAwesomeIcon icon={faDiceD20} className="text-red-600" />
                         </IconButton>
                     </div>
@@ -272,9 +300,9 @@ const CharacterForm = ({ file, onSave }) => {
                         <div className="block text-gray-700 text-sm font-bold">Puissance :</div>
                         <InputBase
                             type="number"
-                            value={power}
+                            value={totalPower}
                             onChange={(e) => setPower(e.target.value)}
-                            inputProps={{ 'aria-label': 'power' }}
+                            inputProps={{ 'aria-label': 'power', min: 0 }}
                             style={{
                                 border: 'none',
                                 outline: 'none',
@@ -284,7 +312,7 @@ const CharacterForm = ({ file, onSave }) => {
                                 width: '50px'
                             }}
                         />
-                        <IconButton>
+                        <IconButton onClick={() => rollDice(totalPower)}>
                             <FontAwesomeIcon icon={faDiceD20} className="text-red-600" />
                         </IconButton>
                     </div>
@@ -292,20 +320,14 @@ const CharacterForm = ({ file, onSave }) => {
                 <div className="p-2 border border-red-600 rounded space-y-2">
                     <div className="flex items-center justify-between">
                         <div className="block text-gray-700 text-sm font-bold">Défense :</div>
-                        <InputBase
-                            type="number"
-                            value={defense}
-                            onChange={(e) => setDefense(e.target.value)}
-                            inputProps={{ 'aria-label': 'defense' }}
+                        <span
                             style={{
-                                border: 'none',
-                                outline: 'none',
-                                backgroundColor: 'transparent',
                                 fontWeight: 'bold',
                                 color: '#dc2626',
-                                width: '50px'
                             }}
-                        />
+                        >
+                            {10 + totalAddress}
+                        </span>
                     </div>
                     <div className="flex items-center justify-between">
                         <div className="block text-gray-700 text-sm font-bold">Arme :</div>
@@ -379,6 +401,7 @@ const CharacterForm = ({ file, onSave }) => {
                 </Button>
             </Box>
             {currentSection === 'stats' ? renderStatsSection() : renderVoiesSection()}
+            <Button onClick={handleSave} variant="contained" color="primary">Save</Button>
         </div>
     );
 };

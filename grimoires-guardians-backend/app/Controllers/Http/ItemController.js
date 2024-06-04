@@ -9,10 +9,10 @@ class ItemController {
             const items = await Item.query()
                 .where('game_id', params.gameId)
                 .fetch();
-
             const capacities = items.toJSON().filter(item => {
                 const data = JSON.parse(item.data);
-                return data.fileType === 'Capacité';
+                console.log('data:', data); // log 3
+                return data.fileType == 'Capacité';
             });
 
             return response.json({
@@ -20,31 +20,10 @@ class ItemController {
                 capacities: capacities
             });
         } catch (error) {
-            console.error('Error fetching capacities:', error);
             return response.status(500).json({
                 success: false,
                 message: 'Failed to fetch capacities'
             });
-        }
-    }
-
-    async getItemsByGame({ params, response }) {
-        const { gameId } = params;
-
-        try {
-            const items = await Item.query().where('game_id', gameId).fetch();
-
-            const formattedItems = items.toJSON().map(item => {
-                return {
-                    id: item.id,
-                    data: JSON.parse(item.data),
-                };
-            });
-
-            return response.status(200).json({ items: formattedItems });
-        } catch (error) {
-            console.error('Error fetching items:', error);
-            return response.status(500).json({ error: 'Failed to fetch items' });
         }
     }
 
@@ -53,10 +32,10 @@ class ItemController {
             const items = await Item.query()
                 .where('game_id', params.gameId)
                 .fetch();
-
             const paths = items.toJSON().filter(item => {
                 const data = JSON.parse(item.data);
-                return data.fileType === 'Voie';
+                console.log('data:', data); // log 3
+                return data.fileType == 'Voie';
             });
 
             return response.json({
@@ -64,10 +43,57 @@ class ItemController {
                 paths: paths
             });
         } catch (error) {
-            console.error('Error fetching paths:', error);
             return response.status(500).json({
                 success: false,
                 message: 'Failed to fetch paths'
+            });
+        }
+    }
+
+    async getProfiles({ params, response }) {
+
+        try {
+            const items = await Item.query()
+                .where('game_id', params.gameId)
+                .fetch()
+            const profiles = items.toJSON().filter(item => {
+                const data = JSON.parse(item.data);
+                return data.fileType == 'Profil';
+            });
+
+            return response.json({
+                success: true,
+                profiles: profiles
+            });
+        } catch (error) {
+            console.error('Error fetching profiles:', error);
+            return response.status(500).json({
+                success: false,
+                message: 'Failed to fetch profiles'
+            });
+        }
+    }
+
+    async getRaces({ params, response }) {
+
+        try {
+            const items = await Item.query()
+                .where('game_id', params.gameId)
+                .fetch()
+            const races = items.toJSON().filter(item => {
+                const data = JSON.parse(item.data);
+                return data.fileType == 'Peuple';
+            });
+
+            return response.json({
+                success: true,
+                profiles: races
+            });
+        } catch (error) {
+            console.error('Error fetching races:', error);
+            return response.status(500).json({
+                success: false,
+                message: 'Failed to fetch races'
             });
         }
     }

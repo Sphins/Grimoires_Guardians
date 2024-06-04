@@ -10,8 +10,6 @@ class HeroesSchema extends Schema {
       table.text('data')
       table.integer('user_id').unsigned().references('id').inTable('users')
       table.integer('game_id').unsigned().references('id').inTable('games')
-      table.integer('race_id').unsigned().references('id').inTable('races')
-      table.integer('class_id').unsigned().references('id').inTable('classes')
       table.text('history')
       table.timestamps()
     })

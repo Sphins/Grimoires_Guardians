@@ -51,14 +51,20 @@ const FileEditPopupItems = ({ open, file, onSave, onClose, gameId }) => {
                 return <NoteForm file={localFile} onSave={handleSave} />;
             case 'Héro':
             case 'Créature':
-                return <CharacterForm file={localFile} onSave={handleSave} />;
+                return <CharacterForm file={localFile} onSave={handleSave} gameId={gameId} />;
             default:
                 return null;
         }
     };
 
     return (
-        <Dialog open={open} onClose={handleSaveAndClose} maxWidth={false} fullWidth>
+        <Dialog open={open} onClose={handleSaveAndClose} maxWidth={false} fullWidth
+            sx={{
+                '& .MuiDialog-paper': {
+                    width: '80vw',
+                    maxWidth: '80vw'
+                }
+            }}>
             <AppBar position="static">
                 <Toolbar>
                     <Typography variant="h6" style={{ flexGrow: 1 }}>
@@ -69,7 +75,7 @@ const FileEditPopupItems = ({ open, file, onSave, onClose, gameId }) => {
                     </IconButton>
                 </Toolbar>
             </AppBar>
-            <DialogContent style={{ minWidth: '300px', maxWidth: '90vw', overflowX: 'auto' }}>
+            <DialogContent style={{ minWidth: '300px', maxWidth: '80%', overflowX: 'auto' }}>
                 {renderForm()}
             </DialogContent>
         </Dialog>
