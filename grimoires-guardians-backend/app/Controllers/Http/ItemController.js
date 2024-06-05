@@ -121,6 +121,61 @@ class ItemController {
             });
         }
     }
+
+    async getCapacitiesForProfilePaths({ params, response }) {
+        try {
+            const { gameId, profileName } = params;
+            const decodedProfileName = decodeURIComponent(profileName);
+            const items = await Item.query().where('game_id', gameId).fetch();
+            const itemsJson = items.toJSON();
+
+            const profile = itemsJson.find(item => {
+                const data = JSON.parse(item.data);
+                return data.fileType === 'Profil' && data.name === decodedProfileName;
+            });
+
+            if (!profile) {
+                return response.status(404).json({
+                    success: false,
+                    message: 'Profile not found'
+                });
+            }
+
+            const profileData = JSON.parse(profile.data);
+            const paths = profileData.paths.map(p => p.path);
+
+            let capacities = {};
+            for (const pathName of paths) {
+                const pathItem = itemsJson.find(item => {
+                    const data = JSON.parse(item.data);
+                    return data.fileType === 'Voie' && data.name === pathName;
+                });
+
+                if (pathItem) {
+                    const pathData = JSON.parse(pathItem.data);
+                    capacities[pathName] = pathData.capacities.map(c => {
+                        const capacityItem = itemsJson.find(item => {
+                            const data = JSON.parse(item.data);
+                            return data.fileType === 'Capacité' && data.name === c.capacity;
+                        });
+                        return capacityItem ? JSON.parse(capacityItem.data) : null;
+                    }).filter(c => c !== null);
+                }
+            }
+
+            return response.json({
+                success: true,
+                paths: paths,
+                capacities: capacities
+            });
+        } catch (error) {
+            console.error('Error fetching capacities for profile paths:', error);
+            return response.status(500).json({
+                success: false,
+                message: 'Failed to fetch capacities for profile paths'
+            });
+        }
+    }
 }
 
 module.exports = ItemController;

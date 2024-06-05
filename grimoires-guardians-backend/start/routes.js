@@ -36,12 +36,11 @@ Route.group(() => {
 
     // Item Management
     Route.get('game/:gameId/items/capacities', 'ItemController.getCapacities').middleware('auth');
-    Route.get('/game/:gameId/items/paths', 'ItemController.getPaths').middleware('auth');
-    Route.get('/game/:gameId/items/profiles', 'ItemController.getProfiles').middleware('auth');
-    Route.get('/game/:gameId/items/peuples', 'ItemController.getRaces').middleware('auth');
-    Route.get('/game/:gameId/equipements', 'ItemController.getItems').middleware('auth');
-
-
+    Route.get('game/:gameId/items/paths', 'ItemController.getPaths').middleware('auth');
+    Route.get('game/:gameId/items/profiles', 'ItemController.getProfiles').middleware('auth');
+    Route.get('game/:gameId/items/peuples', 'ItemController.getRaces').middleware('auth');
+    Route.get('game/:gameId/equipements', 'ItemController.getItems').middleware('auth');
+    Route.get('game/:gameId/profiles/:profileName/paths/capacities', 'ItemController.getCapacitiesForProfilePaths').middleware('auth');
 
     // Note Management
     Route.get('game/:gameId/notes', 'NoteController.getNotes').middleware('auth');

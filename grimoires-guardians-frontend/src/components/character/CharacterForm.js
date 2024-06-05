@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { MenuItem, Select, InputBase, IconButton, Button, Box, Typography, Checkbox, ListItemText, Grid } from '@mui/material';
+import { MenuItem, Select, InputBase, IconButton, Button, Box, Typography, Checkbox, ListItemText, Grid, Paper } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faDiceD20 } from '@fortawesome/free-solid-svg-icons';
 import api from '../../services/api';
@@ -31,8 +31,10 @@ const CharacterForm = ({ file, onSave, gameId, onClose, setTabIndex }) => {
     const [totalAddress, setTotalAddress] = useState(0);
     const [totalSpirit, setTotalSpirit] = useState(0);
     const [totalPower, setTotalPower] = useState(0);
-    const [items, setItems] = useState([]); // Ajoutez cette ligne
-    const [weaponType, setWeaponType] = useState(''); // Ajoutez cette ligne
+    const [items, setItems] = useState([]);
+    const [weaponType, setWeaponType] = useState('');
+    const [paths, setPaths] = useState([]);
+    const [capacities, setCapacities] = useState({});
 
     const { handleSendMessage } = useContext(ChatContext);
 
@@ -91,7 +93,7 @@ const CharacterForm = ({ file, onSave, gameId, onClose, setTabIndex }) => {
 
         fetchProfils();
         fetchRaces();
-        fetchItems(); // Fetch items lors du chargement du composant
+        fetchItems();
     }, [gameId]);
 
     useEffect(() => {
@@ -109,13 +111,31 @@ const CharacterForm = ({ file, onSave, gameId, onClose, setTabIndex }) => {
         setTotalSpirit(+spirit + +raceTraits.esprit + +profileTraits.esprit);
         setTotalPower(+power + +raceTraits.puissance + +profileTraits.puissance);
 
+        if (selectedProfile && selectedProfile.paths) {
+            const paths = selectedProfile.paths.map(p => p.path);
+            setPaths(paths);
+        }
     }, [classType, species, address, spirit, power, profils, races, raceTraits, profileTraits]);
 
     useEffect(() => {
-        // Update damage and weapon type based on selected weapon
+        const fetchCapacities = async () => {
+            try {
+                const response = await api.get(`/api/game/${gameId}/profiles/${classType}/paths/capacities`);
+                setCapacities(response.data.capacities);
+            } catch (error) {
+                console.error('Failed to fetch capacities', error);
+            }
+        };
+
+        if (paths.length > 0) {
+            fetchCapacities();
+        }
+    }, [paths, classType, gameId]);
+
+    useEffect(() => {
         const selectedWeapon = items.find(item => item.fileType === 'Arme' && equipment.includes(item.name));
         if (selectedWeapon) {
-            setWeaponType(selectedWeapon.weaponType); // Update weaponType here
+            setWeaponType(selectedWeapon.weaponType);
             setDamage(selectedWeapon.damage);
         } else {
             setWeaponType('');
@@ -124,7 +144,6 @@ const CharacterForm = ({ file, onSave, gameId, onClose, setTabIndex }) => {
     }, [equipment, items]);
 
     useEffect(() => {
-        // Calculate defense based on selected equipment
         const armors = items.filter(item => item.fileType === 'Armure' && equipment.includes(item.name));
         const totalDefense = 10 + totalAddress + armors.reduce((acc, armor) => acc + (parseInt(armor.defense) || 0), 0);
         setDefense(totalDefense);
@@ -162,9 +181,9 @@ const CharacterForm = ({ file, onSave, gameId, onClose, setTabIndex }) => {
 
     const rollDice = (value, traitType) => {
         const message = `/r 1d20 + ${value}`;
-        handleSendMessage(message, name, traitType); // Passez le nom du personnage et le type de trait ici
-        onClose(); // Ferme la fiche de personnage
-        setTabIndex(0); // Bascule vers l'onglet de chat (assurez-vous que 0 est l'index du chat)
+        handleSendMessage(message, name, traitType);
+        onClose();
+        setTabIndex(0);
     };
 
     const handleAttack = () => {
@@ -194,7 +213,6 @@ const CharacterForm = ({ file, onSave, gameId, onClose, setTabIndex }) => {
         onClose();
         setTabIndex(0);
     };
-
 
     const renderStatsSection = () => (
         <Grid container spacing={3}>
@@ -247,7 +265,8 @@ const CharacterForm = ({ file, onSave, gameId, onClose, setTabIndex }) => {
                         style={{ color: '#dc2626', border: 'none', outline: 'none', backgroundColor: 'transparent', fontWeight: 'bold' }}
                     />
                 </div>
-                <div className="flex space-x-2 items-center p-2 border border-red-600 rounded space-y-2">
+
+                <div className="flex items-center space-x-2 p-2 border border-red-600 rounded space-y-2">
                     <div className="flex-1">
                         <label className="block text-gray-700 text-sm font-bold text-red-600">Profil</label>
                         <Select
@@ -263,8 +282,8 @@ const CharacterForm = ({ file, onSave, gameId, onClose, setTabIndex }) => {
                             ))}
                         </Select>
                     </div>
-                    <div className="text-gray-700 text-sm font-bold mx-2">-</div>
-                    <div className="flex-1">
+                    <div className="text-gray-700 text-sm font-bold ">-</div>
+                    <div className="flex-1 " style={{ marginTop: 0 }}>
                         <label className="block text-gray-700 text-sm font-bold text-red-600">Espèce</label>
                         <Select
                             className="w-full p-2"
@@ -280,6 +299,8 @@ const CharacterForm = ({ file, onSave, gameId, onClose, setTabIndex }) => {
                         </Select>
                     </div>
                 </div>
+
+
                 <div className="p-2 border border-red-600 rounded space-y-2">
                     <label className="text-red-600 block text-gray-700 text-sm font-bold">Background</label>
                     <textarea
@@ -426,7 +447,8 @@ const CharacterForm = ({ file, onSave, gameId, onClose, setTabIndex }) => {
                                 backgroundColor: 'transparent',
                                 fontWeight: 'bold',
                                 color: '#dc2626',
-                                width: '50px'
+                                width: '50px',
+                                fontSize: '0.74rem'
                             }}
                         >
                             {`1d20 + ${weaponType === 'cac' ? totalPower : weaponType === 'dist' ? totalAddress : weaponType === 'magic' ? totalSpirit : ''}`}
@@ -441,6 +463,7 @@ const CharacterForm = ({ file, onSave, gameId, onClose, setTabIndex }) => {
                             style={{
                                 fontWeight: 'bold',
                                 color: '#dc2626',
+                                fontSize: '0.74rem'
                             }}
                         >
                             {weaponType === 'dist' ? damage : weaponType === 'cac' ? `${damage} + ${totalPower}` : weaponType === 'magic' ? `${damage} + ${totalSpirit}` : damage}
@@ -448,14 +471,25 @@ const CharacterForm = ({ file, onSave, gameId, onClose, setTabIndex }) => {
                     </div>
                 </div>
             </Grid>
-        </Grid >
+        </Grid>
     );
 
     const renderVoiesSection = () => (
-        <div className="p-4">
-            <Typography variant="h6" className="text-red-600">Voies Section</Typography>
-            {/* Add your "voies" content here */}
-        </div>
+        <Grid container spacing={3}>
+            {paths.map((path, index) => (
+                <Grid item xs={4} key={index}>
+                    <Paper className="p-4 border border-red-600 rounded space-y-2">
+                        <Typography variant="h6" className="text-red-600">{path}</Typography>
+                        {capacities[path]?.map((capacity, index) => (
+                            <div key={index} className="p-2 border border-gray-300 rounded">
+                                <Typography variant="body1" className="text-gray-700">{capacity.name}</Typography>
+                                <Typography variant="body2" className="text-gray-500">{capacity.description}</Typography>
+                            </div>
+                        ))}
+                    </Paper>
+                </Grid>
+            ))}
+        </Grid>
     );
 
     return (
@@ -484,4 +518,3 @@ const CharacterForm = ({ file, onSave, gameId, onClose, setTabIndex }) => {
 };
 
 export default CharacterForm;
-
