@@ -3,7 +3,7 @@ import { MenuItem, Select, InputBase, IconButton, Button, Box, Typography, Check
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faDiceD20 } from '@fortawesome/free-solid-svg-icons';
 import api from '../../services/api';
-import { ChatContext } from './ChatContext'; // Assurez-vous que le chemin est correct
+import { ChatContext } from './ChatContext';
 
 const ITEM_TYPES = ['Arme', 'Armure', 'Accessoire', 'Autre'];
 
@@ -19,8 +19,7 @@ const CharacterForm = ({ file, onSave, gameId, onClose, setTabIndex }) => {
     const [spirit, setSpirit] = useState(file.data?.spirit || '');
     const [power, setPower] = useState(file.data?.power || '');
     const [defense, setDefense] = useState(file.data?.defense || '');
-    const [weapon, setWeapon] = useState(file.data?.weapon || '');
-    const [damage, setDamage] = useState(file.data?.damage || '');
+    const [damage, setDamage] = useState('');
     const [equipment, setEquipment] = useState(file.data?.equipment || []);
     const [level, setLevel] = useState(file.data?.niveau || '');
     const [editName, setEditName] = useState(false);
@@ -33,6 +32,7 @@ const CharacterForm = ({ file, onSave, gameId, onClose, setTabIndex }) => {
     const [totalSpirit, setTotalSpirit] = useState(0);
     const [totalPower, setTotalPower] = useState(0);
     const [items, setItems] = useState([]); // Ajoutez cette ligne
+    const [weaponType, setWeaponType] = useState(''); // Ajoutez cette ligne
 
     const { handleSendMessage } = useContext(ChatContext);
 
@@ -49,8 +49,6 @@ const CharacterForm = ({ file, onSave, gameId, onClose, setTabIndex }) => {
         setSpirit(file.data?.spirit || '');
         setPower(file.data?.power || '');
         setDefense(file.data?.defense || '');
-        setWeapon(file.data?.weapon || '');
-        setDamage(file.data?.damage || '');
         setEquipment(file.data?.equipment || []);
     }, [file]);
 
@@ -114,16 +112,22 @@ const CharacterForm = ({ file, onSave, gameId, onClose, setTabIndex }) => {
     }, [classType, species, address, spirit, power, profils, races, raceTraits, profileTraits]);
 
     useEffect(() => {
-        const calculateDefense = () => {
-            const baseDefense = 10 + totalAddress;
-            const armorDefense = equipment.reduce((total, itemName) => {
-                const item = items.find(item => item.name === itemName && item.fileType === 'Armure');
-                return item ? total + (parseInt(item.defense) || 0) : total;
-            }, 0);
-            setDefense(baseDefense + armorDefense);
-        };
+        // Update damage and weapon type based on selected weapon
+        const selectedWeapon = items.find(item => item.fileType === 'Arme' && equipment.includes(item.name));
+        if (selectedWeapon) {
+            setWeaponType(selectedWeapon.weaponType); // Update weaponType here
+            setDamage(selectedWeapon.damage);
+        } else {
+            setWeaponType('');
+            setDamage('');
+        }
+    }, [equipment, items]);
 
-        calculateDefense();
+    useEffect(() => {
+        // Calculate defense based on selected equipment
+        const armors = items.filter(item => item.fileType === 'Armure' && equipment.includes(item.name));
+        const totalDefense = 10 + totalAddress + armors.reduce((acc, armor) => acc + (parseInt(armor.defense) || 0), 0);
+        setDefense(totalDefense);
     }, [equipment, items, totalAddress]);
 
     const handleSave = () => {
@@ -143,7 +147,6 @@ const CharacterForm = ({ file, onSave, gameId, onClose, setTabIndex }) => {
                 spirit,
                 power,
                 defense,
-                weapon,
                 damage,
                 equipment,
             }
@@ -165,18 +168,36 @@ const CharacterForm = ({ file, onSave, gameId, onClose, setTabIndex }) => {
     };
 
     const handleAttack = () => {
-        const attackRollMessage = `/r 1d20 + ${weapon}`;
-        const damageRollMessage = `/r ${damage}`;
+        let attackRollMessage;
+        if (weaponType === 'cac') {
+            attackRollMessage = `/r 1d20 + ${totalPower}`;
+        } else if (weaponType === 'dist') {
+            attackRollMessage = `/r 1d20 + ${totalAddress}`;
+        } else if (weaponType === 'magic') {
+            attackRollMessage = `/r 1d20 + ${totalSpirit}`;
+        } else {
+            attackRollMessage = `/r 1d20`;
+        }
+
+        let damageRollMessage;
+        if (weaponType === 'cac') {
+            damageRollMessage = `/r ${damage} + ${totalPower}`;
+        } else if (weaponType === 'magic') {
+            damageRollMessage = `/r ${damage} + ${totalSpirit}`;
+        } else {
+            damageRollMessage = `/r ${damage}`;
+        }
 
         handleSendMessage(attackRollMessage, name, 'attaque');
         handleSendMessage(damageRollMessage, name, 'dégâts');
 
-        onClose(); // Ferme la fiche de personnage
-        setTabIndex(0); // Bascule vers l'onglet de chat (assurez-vous que 0 est l'index du chat)
+        onClose();
+        setTabIndex(0);
     };
 
+
     const renderStatsSection = () => (
-        <Grid container spacing={2}>
+        <Grid container spacing={3}>
             <Grid item xs={4}>
                 <div className="flex-1">
                     <div
@@ -398,11 +419,7 @@ const CharacterForm = ({ file, onSave, gameId, onClose, setTabIndex }) => {
                     </div>
                     <div className="flex items-center justify-between">
                         <div className="block text-gray-700 text-sm font-bold">Arme :</div>
-                        <InputBase
-                            type="number"
-                            value={weapon}
-                            onChange={(e) => setWeapon(e.target.value)}
-                            inputProps={{ 'aria-label': 'weapon' }}
+                        <span
                             style={{
                                 border: 'none',
                                 outline: 'none',
@@ -411,31 +428,27 @@ const CharacterForm = ({ file, onSave, gameId, onClose, setTabIndex }) => {
                                 color: '#dc2626',
                                 width: '50px'
                             }}
-                        />
+                        >
+                            {`1d20 + ${weaponType === 'cac' ? totalPower : weaponType === 'dist' ? totalAddress : weaponType === 'magic' ? totalSpirit : ''}`}
+                        </span>
                         <IconButton onClick={handleAttack}>
                             <FontAwesomeIcon icon={faDiceD20} className="text-red-600" />
                         </IconButton>
                     </div>
                     <div className="flex items-center justify-between">
                         <div className="block text-gray-700 text-sm font-bold">Dégâts :</div>
-                        <InputBase
-                            type="text"
-                            value={damage}
-                            onChange={(e) => setDamage(e.target.value)}
-                            inputProps={{ 'aria-label': 'damage' }}
+                        <span
                             style={{
-                                border: 'none',
-                                outline: 'none',
-                                backgroundColor: 'transparent',
                                 fontWeight: 'bold',
                                 color: '#dc2626',
-                                width: '75px'
                             }}
-                        />
+                        >
+                            {weaponType === 'dist' ? damage : weaponType === 'cac' ? `${damage} + ${totalPower}` : weaponType === 'magic' ? `${damage} + ${totalSpirit}` : damage}
+                        </span>
                     </div>
                 </div>
             </Grid>
-        </Grid>
+        </Grid >
     );
 
     const renderVoiesSection = () => (
@@ -471,3 +484,4 @@ const CharacterForm = ({ file, onSave, gameId, onClose, setTabIndex }) => {
 };
 
 export default CharacterForm;
+
