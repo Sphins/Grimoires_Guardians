@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { MenuItem, Select, InputBase, IconButton, Button, Box, Typography, Checkbox, ListItemText } from '@mui/material';
+import { MenuItem, Select, InputBase, IconButton, Button, Box, Typography, Checkbox, ListItemText, Grid } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faDiceD20 } from '@fortawesome/free-solid-svg-icons';
 import api from '../../services/api';
@@ -163,14 +163,9 @@ const CharacterForm = ({ file, onSave, gameId, onClose, setTabIndex }) => {
     };
 
     const renderStatsSection = () => (
-        <div className="flex lg:flex-row gap-4">
-            <div>
-                <div className="flex-1">
-                    <div
-                        className="w-full h-80 border border-gray-400 bg-cover bg-center mb-4"
-                        style={{ backgroundImage: `url(${file.data?.image || '/mnt/data/image.png'})` }}
-                    ></div>
-                </div>
+        <Grid container spacing={2}>
+            <Grid item xs={4}>
+                <div className="w-full h-80 border border-gray-400 bg-cover bg-center mb-4" style={{ backgroundImage: `url(${file.data?.image || '/mnt/data/image.png'})` }}></div>
                 <div className="p-2 border border-red-600 rounded space-y-2">
                     <label className="block text-gray-700 text-sm font-bold">Équipement</label>
                     <Select
@@ -194,15 +189,10 @@ const CharacterForm = ({ file, onSave, gameId, onClose, setTabIndex }) => {
                         ))}
                     </Select>
                 </div>
-            </div>
-            <div className="flex-1 space-y-4">
+            </Grid>
+            <Grid item xs={4}>
                 <div className="relative flex items-center space-x-2 p-2 border border-red-600 rounded space-y-2">
-                    <label
-                        className={`text-gray-700 text-lg font-bold cursor-pointer ${editName ? 'hidden' : ''}`}
-                        onClick={() => setEditName(true)}
-                    >
-                        Nom :
-                    </label>
+                    <label className={`text-gray-700 text-lg font-bold cursor-pointer ${editName ? 'hidden' : ''}`} onClick={() => setEditName(true)}>Nom :</label>
                     <InputBase
                         type="text"
                         className={`p-2 ${editName ? '' : 'hidden'}`}
@@ -254,8 +244,8 @@ const CharacterForm = ({ file, onSave, gameId, onClose, setTabIndex }) => {
                         onChange={(e) => setBackground(e.target.value)}
                     ></textarea>
                 </div>
-            </div>
-            <div className="flex-1 space-y-4">
+            </Grid>
+            <Grid item xs={4}>
                 <div className="flex items-center space-x-2">
                     <div className="text-xl font-bold text-red-600">Niveau</div>
                     <InputBase
@@ -276,25 +266,11 @@ const CharacterForm = ({ file, onSave, gameId, onClose, setTabIndex }) => {
                 <div className="p-2 border border-red-600 rounded space-y-2">
                     <div className="flex items-center justify-between">
                         <label className="block text-gray-700 text-sm font-bold">Points d'action :</label>
-                        <span
-                            style={{
-                                fontWeight: 'bold',
-                                color: '#dc2626',
-                            }}
-                        >
-                            {2 + totalSpirit}
-                        </span>
+                        <span style={{ fontWeight: 'bold', color: '#dc2626' }}>{2 + totalSpirit}</span>
                     </div>
                     <div className="flex items-center justify-between">
                         <label className="block text-gray-700 text-sm font-bold">Points de vie :</label>
-                        <span
-                            style={{
-                                fontWeight: 'bold',
-                                color: '#dc2626',
-                            }}
-                        >
-                            {10 + (2 * totalPower)}
-                        </span>
+                        <span style={{ fontWeight: 'bold', color: '#dc2626' }}>{10 + (2 * totalPower)}</span>
                     </div>
                     <div className="flex items-center space-x-2">
                         <div className="block text-gray-700 text-sm font-bold">Blessures :</div>
@@ -317,14 +293,7 @@ const CharacterForm = ({ file, onSave, gameId, onClose, setTabIndex }) => {
                             value={totalAddress}
                             onChange={(e) => setAddress(e.target.value)}
                             inputProps={{ 'aria-label': 'address', min: 0 }}
-                            style={{
-                                border: 'none',
-                                outline: 'none',
-                                backgroundColor: 'transparent',
-                                fontWeight: 'bold',
-                                color: '#dc2626',
-                                width: '50px'
-                            }}
+                            style={{ border: 'none', outline: 'none', backgroundColor: 'transparent', fontWeight: 'bold', color: '#dc2626', width: '50px' }}
                         />
                         <IconButton onClick={() => rollDice(totalAddress, 'adresse')}>
                             <FontAwesomeIcon icon={faDiceD20} className="text-red-600" />
@@ -337,14 +306,7 @@ const CharacterForm = ({ file, onSave, gameId, onClose, setTabIndex }) => {
                             value={totalSpirit}
                             onChange={(e) => setSpirit(e.target.value)}
                             inputProps={{ 'aria-label': 'spirit', min: 0 }}
-                            style={{
-                                border: 'none',
-                                outline: 'none',
-                                backgroundColor: 'transparent',
-                                fontWeight: 'bold',
-                                color: '#dc2626',
-                                width: '50px'
-                            }}
+                            style={{ border: 'none', outline: 'none', backgroundColor: 'transparent', fontWeight: 'bold', color: '#dc2626', width: '50px' }}
                         />
                         <IconButton onClick={() => rollDice(totalSpirit, 'esprit')}>
                             <FontAwesomeIcon icon={faDiceD20} className="text-red-600" />
@@ -357,14 +319,7 @@ const CharacterForm = ({ file, onSave, gameId, onClose, setTabIndex }) => {
                             value={totalPower}
                             onChange={(e) => setPower(e.target.value)}
                             inputProps={{ 'aria-label': 'power', min: 0 }}
-                            style={{
-                                border: 'none',
-                                outline: 'none',
-                                backgroundColor: 'transparent',
-                                fontWeight: 'bold',
-                                color: '#dc2626',
-                                width: '50px'
-                            }}
+                            style={{ border: 'none', outline: 'none', backgroundColor: 'transparent', fontWeight: 'bold', color: '#dc2626', width: '50px' }}
                         />
                         <IconButton onClick={() => rollDice(totalPower, 'puissance')}>
                             <FontAwesomeIcon icon={faDiceD20} className="text-red-600" />
@@ -374,14 +329,7 @@ const CharacterForm = ({ file, onSave, gameId, onClose, setTabIndex }) => {
                 <div className="p-2 border border-red-600 rounded space-y-2">
                     <div className="flex items-center justify-between">
                         <div className="block text-gray-700 text-sm font-bold">Défense :</div>
-                        <span
-                            style={{
-                                fontWeight: 'bold',
-                                color: '#dc2626',
-                            }}
-                        >
-                            {10 + totalAddress}
-                        </span>
+                        <span style={{ fontWeight: 'bold', color: '#dc2626' }}>{10 + totalAddress}</span>
                     </div>
                     <div className="flex items-center justify-between">
                         <div className="block text-gray-700 text-sm font-bold">Arme :</div>
@@ -390,14 +338,7 @@ const CharacterForm = ({ file, onSave, gameId, onClose, setTabIndex }) => {
                             value={weapon}
                             onChange={(e) => setWeapon(e.target.value)}
                             inputProps={{ 'aria-label': 'weapon' }}
-                            style={{
-                                border: 'none',
-                                outline: 'none',
-                                backgroundColor: 'transparent',
-                                fontWeight: 'bold',
-                                color: '#dc2626',
-                                width: '50px'
-                            }}
+                            style={{ border: 'none', outline: 'none', backgroundColor: 'transparent', fontWeight: 'bold', color: '#dc2626', width: '50px' }}
                         />
                         <IconButton onClick={handleAttack}>
                             <FontAwesomeIcon icon={faDiceD20} className="text-red-600" />
@@ -410,19 +351,12 @@ const CharacterForm = ({ file, onSave, gameId, onClose, setTabIndex }) => {
                             value={damage}
                             onChange={(e) => setDamage(e.target.value)}
                             inputProps={{ 'aria-label': 'damage' }}
-                            style={{
-                                border: 'none',
-                                outline: 'none',
-                                backgroundColor: 'transparent',
-                                fontWeight: 'bold',
-                                color: '#dc2626',
-                                width: '75px'
-                            }}
+                            style={{ border: 'none', outline: 'none', backgroundColor: 'transparent', fontWeight: 'bold', color: '#dc2626', width: '75px' }}
                         />
                     </div>
                 </div>
-            </div>
-        </div>
+            </Grid>
+        </Grid>
     );
 
     const renderVoiesSection = () => (
