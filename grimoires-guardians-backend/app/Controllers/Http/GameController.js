@@ -65,33 +65,21 @@ class GameController {
         }
     }
 
-    async deleteGame({ params, auth, response }) {
+    async deleteGame({ params, response }) {
         try {
-            const user = await auth.getUser()
-            console.log(`Attempting to delete game with id ${params.id} by user ${user.id}`)
-
-            const game = await Game.query().where('id', params.id).where('mj_id', user.id).first()
-
-            if (!game) {
-                console.log(`Game not found or not authorized for user ${user.id}`)
-                return response.status(404).json({
-                    message: 'Partie non trouvée ou non autorisée'
-                })
-            }
-
-            await game.delete()
-            console.log(`Game with id ${params.id} deleted successfully`)
+            const game = await Game.findOrFail(params.id);
+            await game.delete();
 
             return response.json({
-                message: 'Partie supprimée avec succès'
-            })
+                success: true,
+                message: 'Game deleted successfully'
+            });
         } catch (error) {
-            console.error('Error deleting game:', error)
-            console.log(error)
             return response.status(500).json({
-                message: 'Erreur lors de la suppression de la partie',
+                success: false,
+                message: 'Failed to delete game',
                 error: error.message
-            })
+            });
         }
     }
 
