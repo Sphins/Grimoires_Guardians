@@ -1,20 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { Box, TextField } from '@mui/material';
+import { Box, TextField, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 
 const WeaponForm = ({ file, onSave }) => {
     const [name, setName] = useState(file.name || '');
     const [description, setDescription] = useState(file.data?.description || '');
     const [damage, setDamage] = useState(file.data?.damage || '');
+    const [weaponType, setWeaponType] = useState(file.data?.weaponType || 'cac');
 
     useEffect(() => {
         setName(file.name || '');
         setDescription(file.data?.description || '');
         setDamage(file.data?.damage || '');
+        setWeaponType(file.data?.weaponType || 'cac');
     }, [file]);
 
     useEffect(() => {
-        onSave({ ...file, name, data: { ...file.data, description, damage } });
-    }, [name, description, damage, file, onSave]);
+        onSave({ ...file, name, data: { ...file.data, description, damage, weaponType } });
+    }, [name, description, damage, weaponType, file, onSave]);
 
     return (
         <Box>
@@ -42,6 +44,18 @@ const WeaponForm = ({ file, onSave }) => {
                 value={damage}
                 onChange={(e) => setDamage(e.target.value)}
             />
+            <FormControl fullWidth margin="dense">
+                <InputLabel id="weapon-type-label">Type d'Arme</InputLabel>
+                <Select
+                    labelId="weapon-type-label"
+                    value={weaponType}
+                    onChange={(e) => setWeaponType(e.target.value)}
+                >
+                    <MenuItem value="cac">Corps à Corps</MenuItem>
+                    <MenuItem value="dist">Distance</MenuItem>
+                    <MenuItem value="magic">Magique</MenuItem>
+                </Select>
+            </FormControl>
         </Box>
     );
 };
