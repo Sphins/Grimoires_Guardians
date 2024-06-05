@@ -1,6 +1,7 @@
 'use strict'
 
 const User = use('App/Models/User')
+const Game = use('App/Models/Game')
 const Hash = use('Hash')
 
 class UserController {
@@ -78,6 +79,14 @@ class UserController {
                 error: error.message
             })
         }
+    }
+
+    async search({ request, response }) {
+        const query = request.input('q', '');
+        const users = await User.query()
+            .where('username', 'LIKE', `%${query}%`)
+            .fetch();
+        return response.json({ users: users.toJSON() });
     }
 }
 

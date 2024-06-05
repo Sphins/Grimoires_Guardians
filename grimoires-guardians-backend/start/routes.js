@@ -56,4 +56,10 @@ Route.group(() => {
     Route.put('game/:gameId/heroes/:heroId', 'HeroController.updateHero').middleware('auth');
     Route.delete('hero/:gameId/:heroId', 'HeroController.deleteHero').middleware('auth');
 
+    // User Search and Invite
+    Route.get('/users/search', 'UserController.search').middleware(['auth']);
+    Route.post('/game/:id/add-user', 'GameController.addUser').middleware(['auth']);
+    Route.delete('/game/:id/remove-user/:userId', 'GameController.removeUser').middleware(['auth']);
+    Route.get('/game/:id/members', 'GameController.getMembers').middleware(['auth']);
+
 }).prefix('api');

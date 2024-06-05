@@ -4,6 +4,12 @@ const Model = use('Model');
 const Database = use('Database');
 
 class Game extends Model {
+
+    users() {
+        return this.belongsToMany('App/Models/User')
+            .pivotTable('game_user');
+    }
+
     mj() {
         return this.belongsTo('App/Models/User', 'mj_id', 'id');
     }

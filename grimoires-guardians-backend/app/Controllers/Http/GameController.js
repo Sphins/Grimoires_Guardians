@@ -1,6 +1,7 @@
 'use strict'
 
 const Game = use('App/Models/Game')
+const User = use('App/Models/User')
 const { validate } = use('Validator')
 
 class GameController {
@@ -193,6 +194,65 @@ class GameController {
                 message: 'Erreur lors de la récupération de l\'historique du chat',
                 error: error.message
             })
+        }
+    }
+
+    async addUser({ request, params, response }) {
+        try {
+            const { userId } = request.only(['userId']);
+            const game = await Game.findOrFail(params.id);
+            const user = await User.findOrFail(userId);
+
+            await game.users().attach([user.id]);
+
+            return response.json({
+                success: true,
+                message: 'User added successfully'
+            });
+        } catch (error) {
+            return response.status(500).json({
+                success: false,
+                message: 'Failed to add user',
+                error: error.message
+            });
+        }
+    }
+
+    async removeUser({ params, response }) {
+        try {
+            const game = await Game.findOrFail(params.id);
+            const user = await User.findOrFail(params.userId);
+
+            await game.users().detach([user.id]);
+
+            return response.json({
+                success: true,
+                message: 'User removed successfully'
+            });
+        } catch (error) {
+            return response.status(500).json({
+                success: false,
+                message: 'Failed to remove user',
+                error: error.message
+            });
+        }
+    }
+
+    async getMembers({ params, response }) {
+        try {
+            const game = await Game.findOrFail(params.id);
+            const members = await game.users().fetch();
+
+            return response.json({
+                success: true,
+                members: members.toJSON()
+            });
+        } catch (error) {
+            return response.status(500).json({
+                success: false,
+                message: 'Failed to fetch members',
+                error: error.message
+            });
         }
     }
 
