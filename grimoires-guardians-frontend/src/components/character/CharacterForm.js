@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { MenuItem, Select, InputBase, IconButton, Button, Box, Typography } from '@mui/material';
+import { MenuItem, Select, InputBase, IconButton, Button, Box, Typography, Checkbox, ListItemText } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faDiceD20 } from '@fortawesome/free-solid-svg-icons';
 import api from '../../services/api';
 import { ChatContext } from './ChatContext'; // Assurez-vous que le chemin est correct
+
+const ITEM_TYPES = ['Arme', 'Armure', 'Accessoire', 'Autre'];
 
 const CharacterForm = ({ file, onSave, gameId, onClose, setTabIndex }) => {
     const [name, setName] = useState(file.name || '');
@@ -19,7 +21,7 @@ const CharacterForm = ({ file, onSave, gameId, onClose, setTabIndex }) => {
     const [defense, setDefense] = useState(file.data?.defense || '');
     const [weapon, setWeapon] = useState(file.data?.weapon || '');
     const [damage, setDamage] = useState(file.data?.damage || '');
-    const [equipment, setEquipment] = useState(file.data?.equipment || '');
+    const [equipment, setEquipment] = useState(file.data?.equipment || []);
     const [level, setLevel] = useState(file.data?.niveau || '');
     const [editName, setEditName] = useState(false);
     const [currentSection, setCurrentSection] = useState('stats');
@@ -30,6 +32,7 @@ const CharacterForm = ({ file, onSave, gameId, onClose, setTabIndex }) => {
     const [totalAddress, setTotalAddress] = useState(0);
     const [totalSpirit, setTotalSpirit] = useState(0);
     const [totalPower, setTotalPower] = useState(0);
+    const [items, setItems] = useState([]); // Ajoutez cette ligne
 
     const { handleSendMessage } = useContext(ChatContext);
 
@@ -48,7 +51,7 @@ const CharacterForm = ({ file, onSave, gameId, onClose, setTabIndex }) => {
         setDefense(file.data?.defense || '');
         setWeapon(file.data?.weapon || '');
         setDamage(file.data?.damage || '');
-        setEquipment(file.data?.equipment || '');
+        setEquipment(file.data?.equipment || []);
     }, [file]);
 
     useEffect(() => {
@@ -76,8 +79,21 @@ const CharacterForm = ({ file, onSave, gameId, onClose, setTabIndex }) => {
             }
         };
 
+        const fetchItems = async () => {
+            try {
+                const response = await api.get(`/api/game/${gameId}/equipements`);
+                setItems(response.data.items.map(item => {
+                    const data = JSON.parse(item.data);
+                    return data;
+                }).filter(item => ITEM_TYPES.includes(item.fileType)));
+            } catch (error) {
+                console.error('Failed to fetch items', error);
+            }
+        };
+
         fetchProfils();
         fetchRaces();
+        fetchItems(); // Fetch items lors du chargement du composant
     }, [gameId]);
 
     useEffect(() => {
@@ -157,11 +173,26 @@ const CharacterForm = ({ file, onSave, gameId, onClose, setTabIndex }) => {
                 </div>
                 <div className="p-2 border border-red-600 rounded space-y-2">
                     <label className="block text-gray-700 text-sm font-bold">Équipement</label>
-                    <textarea
-                        className="w-full p-2 border border-gray-300 rounded h-64"
+                    <Select
+                        multiple
                         value={equipment}
                         onChange={(e) => setEquipment(e.target.value)}
-                    ></textarea>
+                        renderValue={(selected) => (
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                {selected.map((value) => (
+                                    <span key={value}>{value}</span>
+                                ))}
+                            </div>
+                        )}
+                        fullWidth
+                    >
+                        {items.map((item) => (
+                            <MenuItem key={item.name} value={item.name} style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                                <Checkbox checked={equipment.indexOf(item.name) > -1} />
+                                <ListItemText primary={item.name} />
+                            </MenuItem>
+                        ))}
+                    </Select>
                 </div>
             </div>
             <div className="flex-1 space-y-4">

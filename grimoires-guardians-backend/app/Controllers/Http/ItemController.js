@@ -97,6 +97,30 @@ class ItemController {
             });
         }
     }
+
+    async getItems({ params, response }) {
+        try {
+            const items = await Item.query()
+                .where('game_id', params.gameId)
+                .fetch();
+            const equipmentItems = items.toJSON().filter(item => {
+                const data = JSON.parse(item.data);
+                const allowedTypes = ['Arme', 'Armure', 'Accessoire', 'Autre'];
+                return allowedTypes.includes(data.fileType);
+            });
+
+            return response.json({
+                success: true,
+                items: equipmentItems
+            });
+        } catch (error) {
+            console.error('Error fetching equipment items:', error);
+            return response.status(500).json({
+                success: false,
+                message: 'Failed to fetch equipment items'
+            });
+        }
+    }
 }
 
 module.exports = ItemController;

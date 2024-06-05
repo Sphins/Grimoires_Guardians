@@ -39,6 +39,7 @@ Route.group(() => {
     Route.get('/game/:gameId/items/paths', 'ItemController.getPaths').middleware('auth');
     Route.get('/game/:gameId/items/profiles', 'ItemController.getProfiles').middleware('auth');
     Route.get('/game/:gameId/items/peuples', 'ItemController.getRaces').middleware('auth');
+    Route.get('/game/:gameId/equipements', 'ItemController.getItems').middleware('auth');
 
 
 
