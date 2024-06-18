@@ -24,7 +24,12 @@ const NavBar = () => {
     return (
         <AppBar position="static">
             <Toolbar>
-                <Typography variant="h6" component={Link} to="/home" sx={{ flexGrow: 1, textDecoration: 'none', color: 'inherit' }}>
+                <Typography
+                    variant="h6"
+                    component={Link}
+                    to="/home"
+                    sx={{ flexGrow: 1, textDecoration: 'none', color: 'inherit' }}
+                >
                     Grimoires Guardians
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 2 }}>
@@ -60,7 +65,7 @@ const NavBar = () => {
                         onClose={handleClose}
                     >
                         <MenuItem onClick={handleClose} component={Link} to="/gerer-compte">Gérer le Compte</MenuItem>
-                        <MenuItem onClick={handleClose} component={Link} to="/gestions-parties">Gérer les Parties</MenuItem> {/* Mettre à jour le chemin */}
+                        <MenuItem onClick={handleClose} component={Link} to="/gestions-parties">Gérer les Parties</MenuItem>
                         <MenuItem onClick={handleLogout}>Se Déconnecter</MenuItem>
                     </Menu>
                 </Box>

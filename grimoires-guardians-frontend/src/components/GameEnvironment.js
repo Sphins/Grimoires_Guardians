@@ -19,7 +19,7 @@ const GameEnvironment = () => {
     const [muted, setMuted] = useState(true);
     const videoRef = useRef(null);
 
-    const filePath = 'http://localhost:3333/videos/runic_circle.m4v';
+    const filePath = 'https://api-grimoires-guardians-34d8b4223e72.herokuapp.com/videos/runic_circle.m4v';
 
     useEffect(() => {
         const determineFileType = (path) => {
@@ -60,15 +60,15 @@ const GameEnvironment = () => {
 
     return (
         <Box className="game-environment" display="flex" height="100vh">
-            <Box className="game-map" flex="1">
+            <Box className="game-map" flex="1" display="flex" justifyContent="center" alignItems="center">
                 {fileType === 'video' && (
-                    <video ref={videoRef} width="100%" height="100%" autoPlay loop preload="auto">
+                    <video ref={videoRef} style={{ maxWidth: '100%', maxHeight: '100%' }} autoPlay loop preload="auto">
                         <source src={filePath} type="video/mp4" />
                         Your browser does not support the video tag.
                     </video>
                 )}
                 {fileType === 'image' && (
-                    <img src={filePath} alt="Map" className="game-map-image" style={{ width: '100%', height: '100%' }} />
+                    <img src={filePath} alt="Map" className="game-map-image" style={{ maxWidth: '100%', maxHeight: '100%' }} />
                 )}
                 {fileType === 'unknown' && (
                     <p>Unsupported file type</p>

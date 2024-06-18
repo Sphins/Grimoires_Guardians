@@ -1,32 +1,64 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Box, TextField, Grid } from '@mui/material';
 
 const RaceForm = ({ file, onSave }) => {
-    const [name, setName] = useState(file.name || '');
-    const [description, setDescription] = useState(file.data?.description || '');
-    const [adresse, setAdresse] = useState(file.data?.traits?.adresse || 0);
-    const [esprit, setEsprit] = useState(file.data?.traits?.esprit || 0);
-    const [puissance, setPuissance] = useState(file.data?.traits?.puissance || 0);
+    const [localFile, setLocalFile] = useState({
+        ...file,
+        data: {
+            ...file.data,
+            traits: {
+                adresse: file.data?.traits?.adresse || 0,
+                esprit: file.data?.traits?.esprit || 0,
+                puissance: file.data?.traits?.puissance || 0,
+            }
+        }
+    });
 
     useEffect(() => {
-        setName(file.name || '');
-        setDescription(file.data?.description || '');
-        setAdresse(file.data?.traits?.adresse || 0);
-        setEsprit(file.data?.traits?.esprit || 0);
-        setPuissance(file.data?.traits?.puissance || 0);
-    }, [file]);
-
-    useEffect(() => {
-        onSave({
+        setLocalFile({
             ...file,
-            name,
             data: {
                 ...file.data,
-                description,
-                traits: { adresse, esprit, puissance }
+                traits: {
+                    adresse: file.data?.traits?.adresse || 0,
+                    esprit: file.data?.traits?.esprit || 0,
+                    puissance: file.data?.traits?.puissance || 0,
+                }
             }
         });
-    }, [name, description, adresse, esprit, puissance, file, onSave]);
+    }, [file]);
+
+    const handleChange = useCallback((key, value) => {
+        setLocalFile(prevFile => {
+            const updatedFile = {
+                ...prevFile,
+                data: {
+                    ...prevFile.data,
+                    traits: {
+                        ...prevFile.data.traits,
+                        [key]: value,
+                    }
+                }
+            };
+            onSave(updatedFile);
+            return updatedFile;
+        });
+    }, [onSave]);
+
+    const handleTopLevelChange = useCallback((key, value) => {
+        setLocalFile(prevFile => {
+            const updatedFile = {
+                ...prevFile,
+                [key]: value,
+                data: {
+                    ...prevFile.data,
+                    [key]: value,
+                }
+            };
+            onSave(updatedFile);
+            return updatedFile;
+        });
+    }, [onSave]);
 
     return (
         <Box>
@@ -35,8 +67,8 @@ const RaceForm = ({ file, onSave }) => {
                 margin="dense"
                 label="Nom"
                 fullWidth
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                value={localFile.name || ''}
+                onChange={(e) => handleTopLevelChange('name', e.target.value)}
             />
             <TextField
                 margin="dense"
@@ -44,8 +76,8 @@ const RaceForm = ({ file, onSave }) => {
                 fullWidth
                 multiline
                 rows={4}
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                value={localFile.data?.description || ''}
+                onChange={(e) => handleTopLevelChange('description', e.target.value)}
             />
             <Grid container spacing={2}>
                 <Grid item xs={4}>
@@ -54,8 +86,8 @@ const RaceForm = ({ file, onSave }) => {
                         label="Adresse"
                         type="number"
                         fullWidth
-                        value={adresse}
-                        onChange={(e) => setAdresse(parseInt(e.target.value, 10))}
+                        value={localFile.data?.traits?.adresse || 0}
+                        onChange={(e) => handleChange('adresse', parseInt(e.target.value, 10))}
                     />
                 </Grid>
                 <Grid item xs={4}>
@@ -64,8 +96,8 @@ const RaceForm = ({ file, onSave }) => {
                         label="Esprit"
                         type="number"
                         fullWidth
-                        value={esprit}
-                        onChange={(e) => setEsprit(parseInt(e.target.value, 10))}
+                        value={localFile.data?.traits?.esprit || 0}
+                        onChange={(e) => handleChange('esprit', parseInt(e.target.value, 10))}
                     />
                 </Grid>
                 <Grid item xs={4}>
@@ -74,8 +106,8 @@ const RaceForm = ({ file, onSave }) => {
                         label="Puissance"
                         type="number"
                         fullWidth
-                        value={puissance}
-                        onChange={(e) => setPuissance(parseInt(e.target.value, 10))}
+                        value={localFile.data?.traits?.puissance || 0}
+                        onChange={(e) => handleChange('puissance', parseInt(e.target.value, 10))}
                     />
                 </Grid>
             </Grid>

@@ -1,31 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Box, TextField, Grid } from '@mui/material';
 
 const CapacityForm = ({ file, onSave }) => {
-    const [name, setName] = useState(file.name || '');
-    const [description, setDescription] = useState(file.data?.description || '');
-    const [bonusDegats, setBonusDegats] = useState(file.data?.bonusDegats || '');
-    const [bonusArmure, setBonusArmure] = useState(file.data?.bonusArmure || '');
+    const [localFile, setLocalFile] = useState({ ...file });
 
     useEffect(() => {
-        setName(file.name || '');
-        setDescription(file.data?.description || '');
-        setBonusDegats(file.data?.bonusDegats || '');
-        setBonusArmure(file.data?.bonusArmure || '');
+        setLocalFile({ ...file });
     }, [file]);
 
-    useEffect(() => {
-        onSave({
-            ...file,
-            name,
-            data: {
-                ...file.data,
-                description,
-                bonusDegats,
-                bonusArmure
-            }
+    const handleChange = useCallback((key, value) => {
+        setLocalFile(prevFile => {
+            const updatedFile = { ...prevFile, [key]: value, data: { ...prevFile.data, [key]: value } };
+            onSave(updatedFile);
+            return updatedFile;
         });
-    }, [name, description, bonusDegats, bonusArmure, file, onSave]);
+    }, [onSave]);
 
     return (
         <Box>
@@ -34,8 +23,8 @@ const CapacityForm = ({ file, onSave }) => {
                 margin="dense"
                 label="Nom"
                 fullWidth
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                value={localFile.name || ''}
+                onChange={(e) => handleChange('name', e.target.value)}
             />
             <TextField
                 margin="dense"
@@ -43,8 +32,8 @@ const CapacityForm = ({ file, onSave }) => {
                 fullWidth
                 multiline
                 rows={4}
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                value={localFile.data?.description || ''}
+                onChange={(e) => handleChange('description', e.target.value)}
             />
             <Grid container spacing={2}>
                 <Grid item xs={6}>
@@ -53,8 +42,8 @@ const CapacityForm = ({ file, onSave }) => {
                         label="Bonus Dégâts"
                         type="number"
                         fullWidth
-                        value={bonusDegats}
-                        onChange={(e) => setBonusDegats(e.target.value)}
+                        value={localFile.data?.bonusDegats || ''}
+                        onChange={(e) => handleChange('bonusDegats', e.target.value)}
                     />
                 </Grid>
                 <Grid item xs={6}>
@@ -63,8 +52,8 @@ const CapacityForm = ({ file, onSave }) => {
                         label="Bonus Armure"
                         type="number"
                         fullWidth
-                        value={bonusArmure}
-                        onChange={(e) => setBonusArmure(e.target.value)}
+                        value={localFile.data?.bonusArmure || ''}
+                        onChange={(e) => handleChange('bonusArmure', e.target.value)}
                     />
                 </Grid>
             </Grid>

@@ -181,7 +181,7 @@ const CharacterForm = ({ file, onSave, gameId, onClose, setTabIndex }) => {
 
     const rollDice = (value, traitType) => {
         const message = `/r 1d20 + ${value}`;
-        handleSendMessage(message, name, traitType);
+        handleSendMessage(gameId, message, name, traitType);
         onClose();
         setTabIndex(0);
     };
@@ -207,8 +207,8 @@ const CharacterForm = ({ file, onSave, gameId, onClose, setTabIndex }) => {
             damageRollMessage = `/r ${damage}`;
         }
 
-        handleSendMessage(attackRollMessage, name, 'attaque');
-        handleSendMessage(damageRollMessage, name, 'dégâts');
+        handleSendMessage(gameId, attackRollMessage, name, 'attaque');
+        handleSendMessage(gameId, damageRollMessage, name, 'dégâts');
 
         onClose();
         setTabIndex(0);

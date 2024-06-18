@@ -2,17 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { Box, TextField } from '@mui/material';
 
 const NoteForm = ({ file, onSave }) => {
-    const [name, setName] = useState(file.name || '');
-    const [content, setContent] = useState(file.data?.content || '');
+    const [localFile, setLocalFile] = useState({ ...file });
 
     useEffect(() => {
-        setName(file.name || '');
-        setContent(file.data?.content || '');
+        setLocalFile({ ...file });
     }, [file]);
 
-    useEffect(() => {
-        onSave({ ...file, name, data: { ...file.data, content } });
-    }, [name, content, file, onSave]);
+    const handleChange = (key, value) => {
+        const updatedFile = { ...localFile, data: { ...localFile.data, [key]: value } };
+        setLocalFile(updatedFile);
+        onSave(updatedFile);
+    };
 
     return (
         <Box>
@@ -21,8 +21,8 @@ const NoteForm = ({ file, onSave }) => {
                 margin="dense"
                 label="Nom"
                 fullWidth
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                value={localFile.name || ''}
+                onChange={(e) => handleChange('name', e.target.value)}
             />
             <TextField
                 margin="dense"
@@ -30,8 +30,8 @@ const NoteForm = ({ file, onSave }) => {
                 fullWidth
                 multiline
                 rows={4}
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
+                value={localFile.data?.content || ''}
+                onChange={(e) => handleChange('content', e.target.value)}
             />
         </Box>
     );

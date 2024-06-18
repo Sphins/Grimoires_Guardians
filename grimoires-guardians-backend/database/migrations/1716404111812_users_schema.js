@@ -9,7 +9,7 @@ class UsersSchema extends Schema {
       table.string('username', 40).notNullable().unique()
       table.string('email', 250).notNullable().unique()
       table.string('password', 250).notNullable()
-      table.string('img', 40)
+      table.string('img', 250)
       table.timestamps()
     })
   }

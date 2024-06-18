@@ -6,7 +6,7 @@ class HeroesSchema extends Schema {
   up() {
     this.create('heroes', (table) => {
       table.increments()
-      table.string('img', 40)
+      table.string('img', 250)
       table.text('data')
       table.integer('user_id').unsigned().references('id').inTable('users').onDelete('CASCADE')
       table.integer('game_id').unsigned().references('id').inTable('games').onDelete('CASCADE')

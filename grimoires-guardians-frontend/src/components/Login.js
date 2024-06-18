@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Container, TextField, Button, Typography, Box, Link } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { Container, TextField, Button, Typography, Box } from '@mui/material';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '../services/api'; // Mettre à jour le chemin d'importation
 
 const Login = () => {
@@ -54,7 +54,7 @@ const Login = () => {
                 </form>
                 <Box mt={2}>
                     <Typography variant="body2">
-                        Vous n'avez pas de compte ? <Link href="/register">Enregistrez-vous</Link>
+                        Vous n'avez pas de compte ? <Link to="/register">Enregistrez-vous</Link>
                     </Typography>
                 </Box>
             </Box>

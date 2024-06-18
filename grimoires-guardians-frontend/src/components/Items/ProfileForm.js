@@ -1,25 +1,37 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Box, TextField, Grid, Select, MenuItem, InputLabel, FormControl, IconButton } from '@mui/material';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import api from '../../services/api';
 
 const ProfileForm = ({ file, onSave, gameId }) => {
-    const [name, setName] = useState(file.name || '');
-    const [description, setDescription] = useState(file.data?.description || '');
-    const [adresse, setAdresse] = useState(file.data?.traits?.adresse || 0);
-    const [esprit, setEsprit] = useState(file.data?.traits?.esprit || 0);
-    const [puissance, setPuissance] = useState(file.data?.traits?.puissance || 0);
-    const [paths, setPaths] = useState(file.data?.paths || [{ path: '' }, { path: '' }, { path: '' }]);
+    const [localFile, setLocalFile] = useState(() => ({
+        ...file,
+        data: {
+            ...file.data,
+            paths: file.data.paths && file.data.paths.length >= 3 ? file.data.paths : new Array(3).fill({ path: '' }),
+            traits: {
+                adresse: file.data?.traits?.adresse || 0,
+                esprit: file.data?.traits?.esprit || 0,
+                puissance: file.data?.traits?.puissance || 0,
+            }
+        }
+    }));
     const [availablePaths, setAvailablePaths] = useState([]);
 
     useEffect(() => {
-        setName(file.name || '');
-        setDescription(file.data?.description || '');
-        setAdresse(file.data?.traits?.adresse || 0);
-        setEsprit(file.data?.traits?.esprit || 0);
-        setPuissance(file.data?.traits?.puissance || 0);
-        setPaths(file.data?.paths || [{ path: '' }, { path: '' }, { path: '' }]);
+        setLocalFile(() => ({
+            ...file,
+            data: {
+                ...file.data,
+                paths: file.data.paths && file.data.paths.length >= 3 ? file.data.paths : new Array(3).fill({ path: '' }),
+                traits: {
+                    adresse: file.data?.traits?.adresse || 0,
+                    esprit: file.data?.traits?.esprit || 0,
+                    puissance: file.data?.traits?.puissance || 0,
+                }
+            }
+        }));
     }, [file]);
 
     useEffect(() => {
@@ -35,34 +47,57 @@ const ProfileForm = ({ file, onSave, gameId }) => {
         fetchPaths();
     }, [gameId]);
 
-    useEffect(() => {
-        onSave({
-            ...file,
-            name,
-            data: {
-                ...file.data,
-                description,
-                traits: { adresse, esprit, puissance },
-                paths
-            }
+    const handleChange = useCallback((key, value) => {
+        setLocalFile(prevFile => {
+            const updatedFile = {
+                ...prevFile,
+                data: {
+                    ...prevFile.data,
+                    [key]: value,
+                }
+            };
+            onSave(updatedFile);
+            return updatedFile;
         });
-    }, [name, description, adresse, esprit, puissance, paths, file, onSave]);
+    }, [onSave]);
+
+    const handleTraitChange = (traitKey, value) => {
+        setLocalFile(prevFile => {
+            const updatedFile = {
+                ...prevFile,
+                data: {
+                    ...prevFile.data,
+                    traits: {
+                        ...prevFile.data.traits,
+                        [traitKey]: value,
+                    }
+                }
+            };
+            onSave(updatedFile);
+            return updatedFile;
+        });
+    };
 
     const handlePathChange = (index, value) => {
-        const updatedPaths = paths.map((path, i) => (
+        const updatedPaths = localFile.data.paths.map((path, i) => (
             i === index ? { ...path, path: value } : path
         ));
-        setPaths(updatedPaths);
+        handleChange('paths', updatedPaths);
     };
 
     const addPath = () => {
-        setPaths([...paths, { path: '' }]);
+        handleChange('paths', [...localFile.data.paths, { path: '' }]);
     };
 
     const removePath = (index) => {
-        const updatedPaths = paths.filter((_, i) => i !== index);
-        setPaths(updatedPaths);
+        const updatedPaths = localFile.data.paths.filter((_, i) => i !== index);
+        handleChange('paths', updatedPaths);
     };
+
+    useEffect(() => {
+        // Notify the parent component about the changes when localFile changes
+        onSave(localFile);
+    }, [localFile, onSave]);
 
     return (
         <Box>
@@ -71,8 +106,8 @@ const ProfileForm = ({ file, onSave, gameId }) => {
                 margin="dense"
                 label="Nom"
                 fullWidth
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                value={localFile.name || ''}
+                onChange={(e) => handleChange('name', e.target.value)}
             />
             <TextField
                 margin="dense"
@@ -80,8 +115,8 @@ const ProfileForm = ({ file, onSave, gameId }) => {
                 fullWidth
                 multiline
                 rows={4}
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                value={localFile.data?.description || ''}
+                onChange={(e) => handleChange('description', e.target.value)}
             />
             <Grid container spacing={2}>
                 <Grid item xs={4}>
@@ -90,8 +125,8 @@ const ProfileForm = ({ file, onSave, gameId }) => {
                         label="Adresse"
                         type="number"
                         fullWidth
-                        value={adresse}
-                        onChange={(e) => setAdresse(parseInt(e.target.value, 10))}
+                        value={localFile.data?.traits?.adresse || 0}
+                        onChange={(e) => handleTraitChange('adresse', parseInt(e.target.value, 10))}
                     />
                 </Grid>
                 <Grid item xs={4}>
@@ -100,8 +135,8 @@ const ProfileForm = ({ file, onSave, gameId }) => {
                         label="Esprit"
                         type="number"
                         fullWidth
-                        value={esprit}
-                        onChange={(e) => setEsprit(parseInt(e.target.value, 10))}
+                        value={localFile.data?.traits?.esprit || 0}
+                        onChange={(e) => handleTraitChange('esprit', parseInt(e.target.value, 10))}
                     />
                 </Grid>
                 <Grid item xs={4}>
@@ -110,19 +145,19 @@ const ProfileForm = ({ file, onSave, gameId }) => {
                         label="Puissance"
                         type="number"
                         fullWidth
-                        value={puissance}
-                        onChange={(e) => setPuissance(parseInt(e.target.value, 10))}
+                        value={localFile.data?.traits?.puissance || 0}
+                        onChange={(e) => handleTraitChange('puissance', parseInt(e.target.value, 10))}
                     />
                 </Grid>
             </Grid>
-            {paths.map((_, index) => (
+            {localFile.data.paths.map((_, index) => (
                 <Grid container spacing={2} alignItems="center" key={index}>
                     <Grid item xs={10}>
                         <FormControl fullWidth margin="dense">
                             <InputLabel id={`path-label-${index}`}>Voie {index + 1}</InputLabel>
                             <Select
                                 labelId={`path-label-${index}`}
-                                value={paths[index]?.path || ''}
+                                value={localFile.data.paths[index]?.path || ''}
                                 onChange={(e) => handlePathChange(index, e.target.value)}
                             >
                                 {availablePaths.map((path) => (
@@ -137,7 +172,7 @@ const ProfileForm = ({ file, onSave, gameId }) => {
                         <IconButton
                             color="secondary"
                             onClick={() => removePath(index)}
-                            disabled={paths.length <= 3} // Empêche de supprimer en dessous de 3 chemins de base
+                            disabled={localFile.data.paths.length <= 3}
                         >
                             <RemoveCircleOutlineIcon />
                         </IconButton>

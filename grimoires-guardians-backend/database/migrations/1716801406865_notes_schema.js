@@ -7,7 +7,7 @@ class NotesSchema extends Schema {
   up() {
     this.create('notes', (table) => {
       table.increments()
-      table.string('img', 40)
+      table.string('img', 250)
       table.text('data')
       table.timestamps()
     })

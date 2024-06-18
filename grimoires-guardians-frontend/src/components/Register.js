@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Container, TextField, Button, Typography, Box, Link } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { Container, TextField, Button, Typography, Box } from '@mui/material';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '../services/api'; // Importer l'instance configurée d'Axios
 
 const Register = () => {
@@ -61,7 +61,7 @@ const Register = () => {
                 </form>
                 <Box mt={2}>
                     <Typography variant="body2">
-                        Vous avez déjà un compte ? <Link href="/login">Connectez-vous</Link>
+                        Vous avez déjà un compte ? <Link to="/login">Connectez-vous</Link>
                     </Typography>
                 </Box>
             </Box>

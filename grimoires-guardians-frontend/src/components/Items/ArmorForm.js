@@ -1,20 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Box, TextField } from '@mui/material';
 
 const ArmorForm = ({ file, onSave }) => {
-    const [name, setName] = useState(file.name || '');
-    const [description, setDescription] = useState(file.data?.description || '');
-    const [defense, setDefense] = useState(file.data?.defense || '');
+    const [localFile, setLocalFile] = useState({ ...file });
 
     useEffect(() => {
-        setName(file.name || '');
-        setDescription(file.data?.description || '');
-        setDefense(file.data?.defense || '');
+        setLocalFile({ ...file });
     }, [file]);
 
-    useEffect(() => {
-        onSave({ ...file, name, data: { ...file.data, description, defense } });
-    }, [name, description, defense, file, onSave]);
+    const handleChange = useCallback((key, value) => {
+        setLocalFile(prevFile => {
+            const updatedFile = { ...prevFile, [key]: value, data: { ...prevFile.data, [key]: value } };
+            onSave(updatedFile);
+            return updatedFile;
+        });
+    }, [onSave]);
 
     return (
         <Box>
@@ -23,8 +23,8 @@ const ArmorForm = ({ file, onSave }) => {
                 margin="dense"
                 label="Nom"
                 fullWidth
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                value={localFile.name || ''}
+                onChange={(e) => handleChange('name', e.target.value)}
             />
             <TextField
                 margin="dense"
@@ -32,15 +32,15 @@ const ArmorForm = ({ file, onSave }) => {
                 fullWidth
                 multiline
                 rows={4}
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                value={localFile.data?.description || ''}
+                onChange={(e) => handleChange('description', e.target.value)}
             />
             <TextField
                 margin="dense"
                 label="Défense"
                 fullWidth
-                value={defense}
-                onChange={(e) => setDefense(e.target.value)}
+                value={localFile.data?.defense || ''}
+                onChange={(e) => handleChange('defense', e.target.value)}
             />
         </Box>
     );

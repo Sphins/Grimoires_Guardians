@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
 import { Container, TextField, Button, Typography, Box } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import NavBar from './NavBar';
 import api from '../services/api'; // Importer l'instance configurée d'Axios
 
 const CreateGame = () => {
     const [gameName, setGameName] = useState('');
     const [description, setDescription] = useState('');
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
+    const navigate = useNavigate();
 
     const handleSubmit = async (event) => {
         event.preventDefault();
@@ -21,9 +25,19 @@ const CreateGame = () => {
                 }
             });
             console.log(response.data);
-            // Rediriger ou afficher un message de succès
+            setSuccess('Partie créée avec succès!');
+            // Rediriger vers une autre page ou réinitialiser le formulaire
+            setGameName('');
+            setDescription('');
+            setError('');
+            // Rediriger vers la page d'accueil ou de gestion des parties après un délai
+            setTimeout(() => {
+                navigate('/rejoindre-partie');
+            }, 2000);
         } catch (error) {
             console.error('Erreur lors de la création de la partie!', error);
+            setError('Erreur lors de la création de la partie. Veuillez réessayer.');
+            setSuccess('');
         }
     };
 
@@ -35,6 +49,8 @@ const CreateGame = () => {
                     <Typography variant="h4" component="h1" gutterBottom>
                         Créer une Partie
                     </Typography>
+                    {error && <Typography color="error">{error}</Typography>}
+                    {success && <Typography color="primary">{success}</Typography>}
                     <form onSubmit={handleSubmit}>
                         <TextField
                             label="Nom de la Partie"

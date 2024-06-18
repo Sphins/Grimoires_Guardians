@@ -1,5 +1,6 @@
 import React, { useEffect, useContext, useState, useRef } from 'react';
 import { Box, TextField, Button, Typography, Paper, List } from '@mui/material';
+import io from 'socket.io-client';
 import api from '../services/api';
 import Message from './Message';
 import { ChatContext } from './character/ChatContext';
@@ -8,6 +9,26 @@ const Chat = ({ gameId }) => {
     const { messages, messageInput, setMessageInput, handleSendMessage, addMessage } = useContext(ChatContext);
     const [userName, setUserName] = useState('System');
     const messagesEndRef = useRef(null);
+    const socketRef = useRef();
+
+    useEffect(() => {
+        const apiUrl = process.env.REACT_APP_API_URL;
+        socketRef.current = io(apiUrl, {
+            transports: ['websocket'],
+        });
+
+        socketRef.current.on('connect', () => {
+            console.log('Connected to Socket.IO server');
+        });
+
+        socketRef.current.on('chat message', (message) => {
+            addMessage(message);
+        });
+
+        return () => {
+            socketRef.current.disconnect();
+        };
+    }, [addMessage]);
 
     useEffect(() => {
         const fetchUserName = async () => {
@@ -63,22 +84,14 @@ const Chat = ({ gameId }) => {
     const handleKeyPress = (event) => {
         if (event.key === 'Enter') {
             event.preventDefault();
-            handleSendMessage(messageInput, userName);
+            handleSendMessage(gameId, messageInput, userName);
+            socketRef.current.emit('chat message', { user: userName, text: messageInput });
         }
     };
 
-    const getResultColor = (total, rolls, sides) => {
-        if (!rolls || !Array.isArray(rolls)) {
-            return 'inherit';
-        }
-        if (sides === 20) {
-            if (rolls.includes(1)) {
-                return 'red';
-            } else if (rolls.includes(20)) {
-                return 'green';
-            }
-        }
-        return 'inherit';
+    const handleSendMessageClick = () => {
+        handleSendMessage(gameId, messageInput, userName);
+        socketRef.current.emit('chat message', { user: userName, text: messageInput });
     };
 
     return (
@@ -90,17 +103,9 @@ const Chat = ({ gameId }) => {
                         <Message
                             key={index}
                             user={message.user}
-                            text={
-                                message.isDiceRoll ? (
-                                    <Typography variant="h4" component="span" style={{ color: getResultColor(message.total, message.rolls, message.command ? parseInt(message.command.split('d')[1]) : 20) }}>
-                                        {message.text}
-                                    </Typography>
-                                ) : (
-                                    message.text
-                                )
-                            }
-                            details={message.isDiceRoll && message.rolls ? `(${message.command}: ${message.rolls.join(', ')})` : undefined}
-                            traitType={message.traitType} // Passez le type de trait ici
+                            text={message.text}
+                            details={message.isDiceRoll ? `(${message.command}: ${message.rolls.join(', ')})` : undefined}
+                            traitType={message.traitType}
                         />
                     ))}
                     <div ref={messagesEndRef} />
@@ -120,7 +125,7 @@ const Chat = ({ gameId }) => {
                     variant="contained"
                     color="primary"
                     style={{ marginLeft: '8px', marginTop: '16px', height: '56px' }}
-                    onClick={() => handleSendMessage(messageInput, userName)}
+                    onClick={handleSendMessageClick}
                 >
                     Envoyer
                 </Button>

@@ -166,7 +166,6 @@ const FileFolderManager = ({ fileTypes, gameId, structureType, setTabIndex }) =>
         }
     }, [structure, structureType, gameId]);
 
-
     const toggleFolder = (id) => {
         setOpenFolders((prevOpenFolders) =>
             prevOpenFolders.includes(id) ? prevOpenFolders.filter((folderId) => folderId !== id) : [...prevOpenFolders, id]
@@ -248,7 +247,6 @@ const FileFolderManager = ({ fileTypes, gameId, structureType, setTabIndex }) =>
         }
     };
 
-
     const loadStructure = async () => {
         if (!gameId) {
             console.error('gameId is undefined');
@@ -273,27 +271,6 @@ const FileFolderManager = ({ fileTypes, gameId, structureType, setTabIndex }) =>
             };
 
             const updatedStructure = ensureType(structureData);
-
-            if (structureType === 'item') {
-                const itemsResponse = await api.get(`/api/game/${gameId}/items`);
-                const dbFolder = {
-                    id: 'db-folder',
-                    name: 'DB',
-                    type: 'folder',
-                    children: itemsResponse.data.items.map(item => ({
-                        id: item.id,
-                        name: JSON.parse(item.data).name,
-                        type: 'file',
-                        fileType: JSON.parse(item.data).fileType,
-                        data: JSON.parse(item.data)
-                    }))
-                };
-
-                const dbFolderExists = updatedStructure.some(item => item.id === 'db-folder');
-                if (!dbFolderExists) {
-                    updatedStructure.push(dbFolder);
-                }
-            }
 
             setStructure(updatedStructure);
         } catch (error) {
@@ -338,13 +315,11 @@ const FileFolderManager = ({ fileTypes, gameId, structureType, setTabIndex }) =>
                 endpoint = `/api/file/${updatedFile.id}`;
             }
 
-
             const response = await api.put(endpoint, {
                 name: updatedFile.name,
                 data: updatedFile.data,
                 type: updatedFile.type // Ajoutez le type ici si nécessaire
             });
-
 
             const updatedItem = response.data.item || response.data.note || response.data.character;
             updatedItem.type = updatedFile.type; // Assurez-vous que le type est défini

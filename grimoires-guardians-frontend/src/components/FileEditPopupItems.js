@@ -19,7 +19,7 @@ const FileEditPopupItems = ({ open, file, onSave, onClose, gameId, setTabIndex }
         setLocalFile(file);
     }, [file]);
 
-    const handleSave = (updatedFile) => {
+    const handleChange = (updatedFile) => {
         setLocalFile(updatedFile);
     };
 
@@ -31,27 +31,27 @@ const FileEditPopupItems = ({ open, file, onSave, onClose, gameId, setTabIndex }
     const renderForm = () => {
         switch (file.fileType) {
             case 'Arme':
-                return <WeaponForm file={localFile} onSave={handleSave} />;
+                return <WeaponForm file={localFile} onSave={handleChange} />;
             case 'Armure':
-                return <ArmorForm file={localFile} onSave={handleSave} />;
+                return <ArmorForm file={localFile} onSave={handleChange} />;
             case 'Accessoire':
-                return <AccesoireForm file={localFile} onSave={handleSave} />;
+                return <AccesoireForm file={localFile} onSave={handleChange} />;
             case 'Autre':
-                return <OtherItemForm file={localFile} onSave={handleSave} />;
+                return <OtherItemForm file={localFile} onSave={handleChange} />;
             case 'Peuple':
-                return <RaceForm file={localFile} onSave={handleSave} />;
+                return <RaceForm file={localFile} onSave={handleChange} />;
             case 'Profil':
-                return <ProfileForm file={localFile} onSave={handleSave} gameId={gameId} />;
+                return <ProfileForm file={localFile} onSave={handleChange} gameId={gameId} />;
             case 'Voie':
-                return <PathForm file={localFile} onSave={handleSave} gameId={gameId} />;
+                return <PathForm file={localFile} onSave={handleChange} gameId={gameId} />;
             case 'Capacité':
-                return <CapacityForm file={localFile} onSave={handleSave} />;
+                return <CapacityForm file={localFile} onSave={handleChange} />;
             case 'Privé':
             case 'Public':
-                return <NoteForm file={localFile} onSave={handleSave} />;
+                return <NoteForm file={localFile} onSave={handleChange} />;
             case 'Héro':
             case 'Créature':
-                return <CharacterForm file={localFile} onSave={handleSave} gameId={gameId} onClose={onClose} setTabIndex={setTabIndex} />;
+                return <CharacterForm file={localFile} onSave={handleChange} gameId={gameId} onClose={onClose} setTabIndex={setTabIndex} />;
             default:
                 return null;
         }

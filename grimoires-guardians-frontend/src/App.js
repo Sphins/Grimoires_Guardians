@@ -5,9 +5,9 @@ import { Helmet } from 'react-helmet';
 
 function App() {
   return (
-    <Router>
+    <Router basename="/grimoires-guardians-frontend">
       <Helmet>
-        <title>Grimoires Guardians</title> {/* Définir le titre de la page */}
+        <title>Grimoires Guardians</title>
       </Helmet>
       <AppRoutes />
     </Router>

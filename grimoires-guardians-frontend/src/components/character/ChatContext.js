@@ -1,5 +1,6 @@
 import React, { createContext, useState } from 'react';
-import { rollDice } from '../../utils/diceRoller';  // Assurez-vous que le chemin est correct
+import { rollDice } from '../../utils/diceRoller';
+import api from '../../services/api';
 
 const ChatContext = createContext();
 
@@ -11,7 +12,7 @@ const ChatProvider = ({ children }) => {
         setMessages((prevMessages) => [...prevMessages, message]);
     };
 
-    const handleSendMessage = (messageText, userName = 'System', traitType = null) => {
+    const handleSendMessage = async (gameId, messageText, userName = 'System', traitType = null) => {
         if (messageText.trim() !== '') {
             let message = { user: userName, text: messageText, traitType };
             if (messageText.startsWith('/r ')) {
@@ -29,6 +30,19 @@ const ChatProvider = ({ children }) => {
             }
             addMessage(message);
             setMessageInput('');
+            try {
+                const token = localStorage.getItem('token');
+                const response = await api.post(`/api/game/${gameId}/save-chat-history`, { history: [...messages, message] }, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+                if (!response.data.success) {
+                    console.error('Error saving message:', response.data);
+                }
+            } catch (error) {
+                console.error('Error sending message', error);
+            }
         }
     };
 
