@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/grimoires-guardians-frontend/static/css/main.59c92831.css",
-    "main.js": "/grimoires-guardians-frontend/static/js/main.5921d5c7.js",
+    "main.js": "/grimoires-guardians-frontend/static/js/main.c86de32b.js",
     "static/js/453.27b36a15.chunk.js": "/grimoires-guardians-frontend/static/js/453.27b36a15.chunk.js",
     "index.html": "/grimoires-guardians-frontend/index.html",
     "main.59c92831.css.map": "/grimoires-guardians-frontend/static/css/main.59c92831.css.map",
-    "main.5921d5c7.js.map": "/grimoires-guardians-frontend/static/js/main.5921d5c7.js.map",
+    "main.c86de32b.js.map": "/grimoires-guardians-frontend/static/js/main.c86de32b.js.map",
     "453.27b36a15.chunk.js.map": "/grimoires-guardians-frontend/static/js/453.27b36a15.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.59c92831.css",
-    "static/js/main.5921d5c7.js"
+    "static/js/main.c86de32b.js"
   ]
 }
